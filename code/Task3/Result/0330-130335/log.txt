@@ -1,2 +1,0 @@
-Namespace(datadir='poly-u-comp-5434-20242-project-task-3', mode='train', seed=42, epoch=100, test_size=0.2, time=time.struct_time(tm_year=2025, tm_mon=3, tm_mday=30, tm_hour=13, tm_min=3, tm_sec=35, tm_wday=6, tm_yday=89, tm_isdst=0), output_dir='./Result/0330-130335/', log=<_io.TextIOWrapper name='./Result/0330-130335/log.txt' mode='w' encoding='UTF-8'>)
-Min Score = 0.999096 (93), Mean Score = 0.999429, Max Score = 0.999738 (5), Var Score = 0.000000.

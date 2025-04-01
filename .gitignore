@@ -1,6 +1,8 @@
 .vscode/
 
 *.zip
+code/Task3/Result/
+code/Task3/Analysis
 
 # Prerequisites
 *.d

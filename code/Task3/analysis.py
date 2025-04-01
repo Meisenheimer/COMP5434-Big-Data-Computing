@@ -3,6 +3,7 @@ import time
 import random
 import argparse
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 
@@ -11,7 +12,31 @@ from sklearn.decomposition import PCA, FastICA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.metrics import f1_score
 
-from preprocess import loadData
+
+def loadData(filename: str, target: bool = False) -> tuple:
+    LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"]
+    data = pd.read_csv(filename)
+    if (target):
+        return data[LABELS].to_numpy(), data["label"].to_numpy(), data["id"].to_numpy()
+    else:
+        return data[LABELS].to_numpy(), data["id"].to_numpy()
+
+
+def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
+    if (args.model == "minedim"):
+        n = x.shape[0]
+        m = x.shape[1]
+        tmp_2 = np.zeros((n, m * (m + 1) // 2))
+        k = 0
+        for i in range(m):
+            for j in range(i, m):
+                tmp_2[:, k] = x[:, i] * x[:, j]
+                k += 1
+        print(k, tmp_2.shape)
+        res = np.concatenate((x, tmp_2), axis=1)
+        return (res - res.min(axis=0)) / (res.max(axis=0) - res.min(axis=0))
+    else:
+        return (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
 
 
 def init(args: argparse.ArgumentParser) -> None:
@@ -23,18 +48,26 @@ def init(args: argparse.ArgumentParser) -> None:
     return None
 
 
+def drawPC(name: str, x: np.ndarray, y: np.ndarray) -> None:
+    index = random.sample(list(range(x.shape[0])), 2000)
+    data = (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
+    pyplot.clf()
+    pyplot.figure(figsize=[10, 2])
+    pyplot.vlines(range(data.shape[1]), ymin=0, ymax=1.0, color="g", linestyles="--", linewidth=0.5)
+    for i in index:
+        pyplot.plot(range(data.shape[1]), data[i, :], color='b' if y[i] == 1 else 'r', alpha=0.25, linewidth=0.5)
+    pyplot.savefig(os.path.join(args.output, f"{name}.jpg"), dpi=720, bbox_inches="tight")
+    pyplot.close()
+    return None
+
+
 def main(args: argparse.Namespace) -> None:
-    """
-    The algorithm is shown in the slide and report.
-    """
     # load the data from csv file.
     print("Loading data.")
-    x, y = loadData(args.datafile, True)
+    x, y, _ = loadData(args.datafile, True)
+    x = preprocess(x, args)
     print(x.shape)
     print(y.shape)
-
-    # Preprocessing.
-    print("Preprocessing.")
 
     color = []
     for target in y:
@@ -48,6 +81,8 @@ def main(args: argparse.Namespace) -> None:
     #     pyplot.grid()
     #     pyplot.scatter(pca[:, i], pca[:, i + 1], color=color, s=[1.0] * pca.shape[0], alpha=0.5)
     #     pyplot.savefig(os.path.join(args.output, f"PCA-{i}-{i + 1}.jpg"), dpi=720, bbox_inches="tight")
+    #     pyplot.close()
+    # drawPC("PCA-PC", pca, y)
 
     # # ICA
     # print("ICA.")
@@ -58,31 +93,80 @@ def main(args: argparse.Namespace) -> None:
     #     pyplot.grid()
     #     pyplot.scatter(ica[:, i], ica[:, i + 1], color=color, s=[1.0] * ica.shape[0], alpha=0.5)
     #     pyplot.savefig(os.path.join(args.output, f"ICA-{i}-{i + 1}.jpg"), dpi=720, bbox_inches="tight")
+    #     pyplot.close()
+    # drawPC("ICA-PC", ica, y)
 
-    # LDA
-    print("LDA.")
-    lda = LinearDiscriminantAnalysis().fit_transform(x, y)
+    # # LDA
+    # print("LDA.")
+    # lda = LinearDiscriminantAnalysis().fit_transform(x, y)
 
+    # lda[lda >= 6] = 6
+    # lda[lda <= -6] = -6
+
+    # print(lda[y == 0].min())
+    # print(lda[y == 0].max())
+    # print(lda[y == 0].min())
+    # print(lda[y == 0].max())
+
+    # pyplot.clf()
+    # pyplot.figure(figsize=[10, 3])
+    # pyplot.grid()
+    # pyplot.xlim([-5, 5])
+    # pyplot.hist(lda[y == 0], color="r", label="0", alpha=0.5, density=True, bins=60)
+    # pyplot.vlines(np.percentile(lda[y == 0], (25, 50, 75)), ymin=0, ymax=0.9, color="r", linestyles="--")
+    # pyplot.hist(lda[y == 1], color="b", label="1", alpha=0.5, density=True, bins=60)
+    # pyplot.vlines(np.percentile(lda[y == 1], (25, 50, 75)), ymin=0, ymax=0.9, color="b", linestyles="--")
+    # pyplot.legend()
+    # pyplot.savefig(os.path.join(args.output, f"LDA.jpg"), dpi=720, bbox_inches="tight")
+    # pyplot.close()
+
+    # for i in range(x.shape[1]):
+    #     data = x[:, i].reshape(-1, 1)
+    #     lda = LinearDiscriminantAnalysis()
+    #     qda = QuadraticDiscriminantAnalysis()
+    #     lda.fit(data, y)
+    #     qda.fit(data, y)
+    #     print(i, f1_score(y, lda.predict(data), average="macro"), f1_score(y, qda.predict(data), average="macro"))
+
+    # Correlation
+    corrcoef = np.corrcoef(x.transpose())
     pyplot.clf()
     pyplot.grid()
-    pyplot.hist(lda[y == 0], color="r", label="0", alpha=0.5, density=True, bins=25)
-    pyplot.vlines(np.percentile(lda[y == 0], (25, 50, 75)), ymin=0, ymax=0.5, color="r", linestyles="--")
-    pyplot.hist(lda[y == 1], color="b", label="1", alpha=0.5, density=True, bins=25)
-    pyplot.vlines(np.percentile(lda[y == 1], (25, 50, 75)), ymin=0, ymax=0.5, color="b", linestyles="--")
-    pyplot.legend()
-    pyplot.savefig(os.path.join(args.output, f"LDA.jpg"), dpi=720, bbox_inches="tight")
+    pyplot.imshow(corrcoef)
+    pyplot.colorbar()
+    pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), dpi=720, bbox_inches="tight")
+    pyplot.close()
 
-    lda[lda > 0] = 1
-    lda[lda <= 0] = 0
-    print(f1_score(y, lda, average="macro"))
+    # Parallel Coordinates
+    index = range(x.shape[0])
+    index = random.sample(list(range(x.shape[0])), x.shape[0] // 10)
+    data = (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
+    pyplot.clf()
+    pyplot.figure(figsize=[10, 2])
+    pyplot.vlines(range(x.shape[1]), ymin=0, ymax=1.0, color="g", linestyles="--", linewidth=0.5)
+    for i in index:
+        tick = np.arange(0, x.shape[1], 1)
+        pyplot.plot(tick, data[i, :], color='b' if y[i] == 1 else 'r', alpha=0.25, linewidth=0.5)
+    pyplot.savefig(os.path.join(args.output, f"PC.jpg"), dpi=720, bbox_inches="tight")
+    pyplot.close()
 
-    # QDA
-    print("QDA.")
-    qda = QuadraticDiscriminantAnalysis().fit(x, y).predict(x)
-    qda[qda > 0] = 1
-    qda[qda <= 0] = 0
-    print(f1_score(y, qda, average="macro"))
-
+    # # Hist
+    # for i in range(x.shape[1]):
+    #     data = x[:, i]
+    #     data[data >= 4] = 4
+    #     data[data <= -4] = -4
+    #     print(i, data[y == 0].min(), data[y == 0].max(), data[y == 0].min(), data[y == 0].max())
+    #     pyplot.clf()
+    #     pyplot.figure(figsize=[10, 3])
+    #     pyplot.grid()
+    #     pyplot.xlim([-3, 3])
+    #     pyplot.hist(data[y == 0], color="r", label="0", alpha=0.5, density=True, bins=60)
+    #     pyplot.vlines(np.percentile(data[y == 0], (25, 50, 75)), ymin=0, ymax=0.9, color="r", linestyles="--")
+    #     pyplot.hist(data[y == 1], color="b", label="1", alpha=0.5, density=True, bins=60)
+    #     pyplot.vlines(np.percentile(data[y == 1], (25, 50, 75)), ymin=0, ymax=0.9, color="b", linestyles="--")
+    #     pyplot.legend()
+    #     pyplot.savefig(os.path.join(args.output, f"Hist-{i}.jpg"), dpi=720, bbox_inches="tight")
+    #     pyplot.close()
     return None
 
 
@@ -90,13 +174,15 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--datafile", type=str, required=True)
+    parser.add_argument("--datafile", type=str, default="./poly-u-comp-5434-20242-project-task-3/train.csv")
 
     parser.add_argument("--nPCA", type=int, default=4)
     parser.add_argument("--nICA", type=int, default=4)
 
+    parser.add_argument("--model", type=str, required=True)
+
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--output", type=str, default="./Result/Analysis/")
+    parser.add_argument("--output", type=str, default="./Analysis/")
 
     args = parser.parse_args()
 
