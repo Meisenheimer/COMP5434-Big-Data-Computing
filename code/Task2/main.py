@@ -11,9 +11,11 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.linear_model import Lasso
-from sklearn.ensemble import RandomForestClassifier
 
 from preprocess import loadData
+from randomForest import DecisionTree
+
+import cProfile
 
 
 def init(args: argparse.ArgumentParser) -> None:
@@ -22,44 +24,6 @@ def init(args: argparse.ArgumentParser) -> None:
     """
     np.random.seed(args.seed)
     random.seed(args.seed)
-    return None
-
-
-def train(args: argparse.Namespace) -> None:
-    # load the data from csv file.
-    print("Loading data.")
-    x, y, _ = loadData(os.path.join(args.data_dir, "train.csv"), True)
-    print(x.shape)
-    print(y.shape)
-
-    # Preprocessing.
-    print("Preprocessing.")
-
-    # Training and testing.
-    print("Training and testing.")
-    score = []
-    for seed in tqdm(range(args.epoch)):
-        # Train and test the data with different splitting, and then take the average as the result.
-        args.seed = seed
-        init(args)
-
-        train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=args.test_size)
-
-        # model = Lasso(0.0001)
-        model = RandomForestClassifier(n_estimators=20, max_depth=100, n_jobs=mul.cpu_count())
-
-        model.fit(train_x, train_y)
-        pred_y = model.predict(test_x)
-        pred_y[pred_y > 0.5] = 1
-        pred_y[pred_y <= 0.5] = 0
-
-        score.append(f1_score(test_y, pred_y, average="macro"))
-
-    print("Min Score = %f (%d), Mean Score = %f, Max Score = %f (%d), Var Score = %f." % (min(score), score.index(min(score)), np.mean(score), max(score), score.index(max(score)), np.var(score)), file=args.log)
-
-    with open(os.path.join(args.output_dir, "Score.txt"), "w", encoding="UTF-8") as fp:
-        for i in range(len(score)):
-            print(score[i], file=fp)
     return None
 
 
@@ -78,22 +42,24 @@ def test(args: argparse.Namespace):
     score = 0.0
 
     # model = Lasso(0.0001)
-    model = RandomForestClassifier(n_estimators=20, max_depth=100, n_jobs=mul.cpu_count())
+    model = DecisionTree(args)
 
-    model.fit(train_x, train_y)
-    pred_y = model.predict(train_x)
+    data_index = random.sample(range(train_x.shape[0]), round(train_x.shape[0] * args.rate))
+    feat_index = random.sample(range(train_x.shape[1]), round(train_x.shape[1] * args.rate))
+    model.fit(train_x[data_index, :][:, feat_index], train_y[data_index])
+    pred_y = model.predict(train_x[data_index, :][:, feat_index])
     pred_y[pred_y > 0.5] = 1
     pred_y[pred_y <= 0.5] = 0
 
-    score = f1_score(train_y, pred_y, average="macro")
+    score = f1_score(train_y[data_index], pred_y, average="macro")
 
-    print("Train Score = %f." % score, file=args.log)
+    print("Train Score = %f." % score)
 
-    pred_y = model.predict(test_x)
+    pred_y = model.predict(test_x[:, feat_index])
     pred_y[pred_y > 0.5] = 1
     pred_y[pred_y <= 0.5] = 0
 
-    pred_y = model.predict(test_x)
+    pred_y = model.predict(test_x[:, feat_index])
 
     with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
         print("id,label", file=fp)
@@ -107,13 +73,15 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--data_dir", type=str, required=True)
+    parser.add_argument("--data_dir", type=str, default="./poly-u-comp-5434-20242-project-task-2/")
 
-    parser.add_argument("--mode", type=str, default="")
+    parser.add_argument("--max_depth", type=int, default=100)
+    parser.add_argument("--min_samples_split", type=int, default=2)
+    parser.add_argument("--criterion", type=str, default="gini")
+    parser.add_argument("--device", type=str, default="cpu")
 
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--epoch", type=int, default=100)
-    parser.add_argument("--test_size", type=float, default=0.2)
+    parser.add_argument("--rate", type=float, default=0.5)
 
     args = parser.parse_args()
     args.time = time.localtime()
@@ -123,19 +91,8 @@ if __name__ == "__main__":
     os.makedirs("./Result/", exist_ok=True)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    args.log = open(os.path.join(args.output_dir, "log.txt"), "w", encoding="UTF-8")
-
-    print(args, file=args.log)
-
     init(args)
-    if (args.mode.lower() == "train"):
-        train(args)
-    elif (args.mode.lower() == "test"):
-        test(args)
-    else:
-        train(args)
-        test(args)
-
-    args.log.close()
+    test(args)
+    # cProfile.run("test(args)", sort="tottime")
 
     print("Total time = %f(s)" % (time.time() - start_time))

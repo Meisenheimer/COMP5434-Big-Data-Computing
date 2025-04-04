@@ -15,8 +15,8 @@ def loadData(filename: str, target: bool = False) -> tuple:
 def preprocess(x: np.ndarray) -> np.ndarray:
     data = np.nanmean(x, axis=0)
     for i in range(18):
-        x[np.isnan(x[:, i]), i] = 0.0
-        # x[np.isnan(x[:, i]), i] = data[i]
+        # x[np.isnan(x[:, i]), i] = 0.0
+        x[np.isnan(x[:, i]), i] = data[i]
     return x
 
 
