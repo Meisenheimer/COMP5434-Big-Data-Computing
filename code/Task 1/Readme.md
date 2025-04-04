@@ -15,7 +15,7 @@ Training data includes training records with ground-truth class labels. Each row
 
 - label: It is our classification target, indicating whether this student is placed (1 indicates placed.).
 
-Your goal is to train a model to predict (classify) whether each student in another test dataset will be placed (i.e., can find a job) based on the training set. Evaluation is based on the Macro-F1 metric.
+Your goal is to train a model to predict (classify) whether each student in another test dataset will be placed (i.e., can find a job) based on the training set. Evaluation is based on the Macro-F1 metric. 将Macro-F1优化到0.85以上甚至0.95以上
 
 Number of samples in the training set: 7093
 
@@ -48,3 +48,7 @@ You can use low-level third-party packages to facilitate your implementation.
 Your implementation should involve sufficient technical details developed by
 yourselves.
 	o DO NOT simply call ready-to-use classification models provided in existing packages, as a Blackbox, to finish the project.
+
+
+
+答案：https://www.kaggle.com/datasets/ruchikakumbhar/placement-prediction-dataset/code
