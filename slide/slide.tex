@@ -1,0 +1,226 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{color, xcolor}
+
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+\usepackage{enumerate}
+
+\usepackage{amsfonts}
+\usepackage{eucal}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{gensymb}
+\usepackage{amsthm}
+\usepackage{makecell}
+\usepackage[ruled]{algorithm2e}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\usepackage[backend=bibtex,style=authoryear]{biblatex}
+\bibliography{reference.bib}
+\setbeamerfont{footnote}{size=\tiny}
+\renewcommand{\thefootnote}{[\arabic{footnote}]}
+
+\title{Project Report}
+\author{Team \#12}
+\institute{
+  \parbox{0.2\textwidth}{
+    \centering WANG Zeyu
+    \vspace{.25cm}
+  }
+  \parbox{0.2\textwidth}{
+    \centering YANG Xirui
+    \vspace{.25cm}
+  }
+  \parbox{0.2\textwidth}{
+    \centering Wu Tianxiao
+    \vspace{.25cm}
+  }
+}
+\date{\today}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=0.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertsection
+  \end{beamercolorbox}%
+  % \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+  %   \usebeamerfont{title in head/foot}\inserttitle
+  % \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=0.5\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+    \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\usefonttheme[onlymath]{serif}
+
+\begin{document}
+
+\section*{Cover}
+\frame{\titlepage}
+
+% \section*{Contents}
+% \begin{frame}{Contents}
+%   \tableofcontents
+% \end{frame}
+
+\section{Task-1}
+
+\subsection{Problem definition}
+
+\begin{frame}{Task-1 - Problem definition}
+
+  \begin{itemize}
+    \item Dataset: the academic and training performance of students;
+    \item Goal: train a model to predict whether each student will be placed (i.e., can find a job).
+  \end{itemize}
+
+\end{frame}
+
+\subsection{Prepare}
+
+\begin{frame}{Task-1 - Prepare - Data distribution}
+
+  % \begin{figure}[H]
+  %   \centering
+  %   \includegraphics[width=0.8\textwidth]{} \\
+  %   \includegraphics[width=0.8\textwidth]{}
+  %   \caption{Data distribution.}
+  % \end{figure}
+
+\end{frame}
+
+\begin{frame}{Task-1 - Prepare - Correlation coefficient}
+
+  % \begin{figure}[H]
+  %   \centering
+  %   \includegraphics[width=0.8\textwidth]{}
+  %   \caption{Correlation coefficient.}
+  % \end{figure}
+
+\end{frame}
+
+\subsection{Analyze}
+
+\begin{frame}{Task-1 - Analyze - Logistic Regression}
+  Given the dataset ${(\mathbf{x}_i, y_i)}_{i=1}^n$, the logistic regression aims to fit the function
+
+  $$
+    f(\mathbf{x}) = \frac{1}{1 + \exp(-(\mathbf{x}^T \mathbf{w} + b))}
+  $$
+
+  with the binary cross entropy loss function
+
+  $$
+    \text{loss}\left({(x_i, y_i)}_{i=1}^n\right) = \sum_{i=1}^n \left(- y_i \log (f(x_i)) - (1 - y_i) \log (1 - f(x_i))\right).
+  $$
+\end{frame}
+
+\subsection{Performance}
+
+\begin{frame}{Task-1 - Performance}
+
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+      \hline
+      Model Parameter & Time (Train/Test) & Memory & F1 Score (Train/Test) \\
+      \hline
+    \end{tabular}
+    \caption{Model Performance.}
+  \end{table}
+
+\end{frame}
+
+\section{Task-2}
+
+\subsection{Problem definition}
+
+\begin{frame}{Task-2 - Problem definition}
+
+  \begin{itemize}
+    \item Dataset: some features with labels;
+    \item Goal: predict the labels.
+  \end{itemize}
+
+\end{frame}
+
+\subsection{Prepare}
+
+\begin{frame}{Task-2 - Prepare}
+
+\end{frame}
+
+\subsection{Analyze}
+
+\begin{frame}{Task-2 - Analyze}
+
+\end{frame}
+
+\subsection{Performance}
+
+\begin{frame}{Task-2 - Performance}
+
+\end{frame}
+
+\section{Task-3}
+
+\subsection{Problem definition}
+
+\begin{frame}{Task-3 - Problem definition}
+  \begin{itemize}
+    \item Dataset: credit card transactions with fraud indicator;
+    \item Goal: classify whether this transaction is fraudulent or not.
+  \end{itemize}
+\end{frame}
+
+\subsection{Prepare}
+
+\begin{frame}{Task-3 - Prepare - Distribution}
+
+  % \begin{figure}[H]
+  %   \centering
+  %   \includegraphics[width=0.8\textwidth]{} \\
+  %   \includegraphics[width=0.8\textwidth]{}
+  %   \caption{Data distribution.}
+  % \end{figure}
+
+\end{frame}
+
+\begin{frame}{Task-3 - Prepare}
+
+\end{frame}
+
+\subsection{Analyze}
+
+\begin{frame}{Task-3 - Analyze}
+
+\end{frame}
+
+\subsection{Performance}
+
+\begin{frame}{Task-3 - Performance}
+
+\end{frame}
+
+\section*{Reference}
+\begin{frame}[allowframebreaks]{Reference}
+  \printbibliography
+\end{frame}
+
+\appendix
+
+\end{document}
