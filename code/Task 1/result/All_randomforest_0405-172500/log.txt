@@ -1,0 +1,3 @@
+Namespace(data_dir='', n_estimator=5, max_depth=10, min_samples_split=2, min_samples_leaf=1, n_threshold=128, split_data_size=1, criterion='entropy', alpha_1=0.0, alpha_2=0.0, threshold=0.5, lr=0.1, gamma=1.15, tol=0.001, raising=False, degree=1, mode='All', model='randomforest', seed=42, epoch=10, test_size=0.2, device='cpu', time=time.struct_time(tm_year=2025, tm_mon=4, tm_mday=5, tm_hour=17, tm_min=25, tm_sec=0, tm_wday=5, tm_yday=95, tm_isdst=0), output_dir='result/All_randomforest_0405-172500/', log=<_io.TextIOWrapper name='result/All_randomforest_0405-172500/log.txt' mode='w' encoding='UTF-8'>)
+Min Score = 0.708852 (6), Mean Score = 0.728132, Max Score = 0.744039 (5), Var Score = 0.000136.
+Train Score = 0.788892.
