@@ -62,8 +62,8 @@ def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
         return LogisticModel(args)
     elif (args.model.lower() == "randomforest"):
-        # return RandomForestClassifier(n_estimators=args.n_estimator, max_depth=args.max_depth, min_samples_split=args.min_samples_split, criterion=args.criterion, n_jobs=mul.cpu_count())
         return RandomForest(args)
+        # return RandomForestClassifier(n_estimators=args.n_estimator, max_depth=args.max_depth, min_samples_split=args.min_samples_split, criterion=args.criterion, n_jobs=mul.cpu_count())
     else:
         raise
 
@@ -80,7 +80,7 @@ def train(args: argparse.Namespace) -> None:
     # Training and testing.
     print("Training and testing.")
     score = []
-    for seed in range(args.epoch):
+    for seed in range(1, args.epoch):
         # Train and test the data with different splitting, and then take the average as the result.
         print(f"Epoch {seed}.")
         args.seed = seed
@@ -145,9 +145,12 @@ if __name__ == "__main__":
 
     parser.add_argument("--n_estimator", type=int, default=10)
 
-    parser.add_argument("--max_depth", type=int, default=10)
+    parser.add_argument("--max_depth", type=int, default=20)
     parser.add_argument("--min_samples_split", type=int, default=2)
+    parser.add_argument("--min_samples_leaf", type=int, default=1)
     parser.add_argument("--criterion", type=str, default="gini")
+    parser.add_argument("--n_threshold", type=int, default=128)
+    parser.add_argument("--split_data_size", type=float, default=0.5)
 
     parser.add_argument("--alpha_1", type=float, default=0.0)
     parser.add_argument("--alpha_2", type=float, default=0.0)
