@@ -5,7 +5,8 @@ import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+import scipy.stats
+import seaborn as sns
 
 from matplotlib import pyplot
 from sklearn.decomposition import PCA, FastICA
@@ -23,20 +24,7 @@ def loadData(filename: str, target: bool = False) -> tuple:
 
 
 def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
-    if (args.model == "minedim"):
-        n = x.shape[0]
-        m = x.shape[1]
-        tmp_2 = np.zeros((n, m * (m + 1) // 2))
-        k = 0
-        for i in range(m):
-            for j in range(i, m):
-                tmp_2[:, k] = x[:, i] * x[:, j]
-                k += 1
-        print(k, tmp_2.shape)
-        res = np.concatenate((x, tmp_2), axis=1)
-        return (res - res.min(axis=0)) / (res.max(axis=0) - res.min(axis=0))
-    else:
-        return (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
+    return (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
 
 
 def init(args: argparse.ArgumentParser) -> None:
@@ -129,15 +117,36 @@ def main(args: argparse.Namespace) -> None:
     #     print(i, f1_score(y, lda.predict(data), average="macro"), f1_score(y, qda.predict(data), average="macro"))
 
     # Correlation
-    corrcoef = np.corrcoef(x.transpose())
-    pyplot.clf()
-    pyplot.grid()
-    pyplot.imshow(corrcoef)
-    pyplot.colorbar()
-    pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), dpi=720, bbox_inches="tight")
-    pyplot.close()
+    print("Correlation")
+    methods = [
+        ('pearson', 'Pearson Correlation Coeffiecient'),
+        ('spearman', 'Spearman Correlation Coeffiecient'),
+        ('kendall', 'Kendall Correlation Coeffiecient')
+    ]
+    LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount", "label"]
+    df = pd.read_csv(args.datafile)[LABELS]
+    pyplot.figure(figsize=(18, 6))
+    for i, (method, title) in enumerate(methods, 1):
+        pyplot.subplot(1, 3, i)
+        corr = df.corr(method=method, numeric_only=True)
+        sns.heatmap(corr[['label']].sort_values(by='label', ascending=False), annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+        pyplot.title(title)
+    pyplot.tight_layout()
+    pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), bbox_inches='tight')
+
+    # print("Correlation")
+    # corrcoef = np.corrcoef(x.transpose(), y=y)
+    # pyplot.clf()
+    # pyplot.grid()
+    # pyplot.imshow(corrcoef)
+    # pyplot.colorbar()
+    # pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), dpi=720, bbox_inches="tight")
+    # pyplot.close()
 
     # Parallel Coordinates
+    print("Parallel Coordinates.")
+    mean = np.mean(x, axis=0)
+    std = np.std(x, axis=0)
     index = range(x.shape[0])
     index = random.sample(list(range(x.shape[0])), x.shape[0] // 10)
     data = (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
@@ -147,6 +156,10 @@ def main(args: argparse.Namespace) -> None:
     for i in index:
         tick = np.arange(0, x.shape[1], 1)
         pyplot.plot(tick, data[i, :], color='b' if y[i] == 1 else 'r', alpha=0.25, linewidth=0.5)
+    for i in range(x.shape[1]):
+        upper = min(float(mean[i] + 3 * std[i]), 1)
+        lower = max(float(mean[i] - 3 * std[i]), 0)
+        pyplot.hlines(y=(upper, mean[i], lower), xmin=i - 0.5, xmax=i + 0.5, color="g", linestyles="--", linewidth=0.5)
     pyplot.savefig(os.path.join(args.output, f"PC.jpg"), dpi=720, bbox_inches="tight")
     pyplot.close()
 
@@ -178,8 +191,6 @@ if __name__ == "__main__":
 
     parser.add_argument("--nPCA", type=int, default=4)
     parser.add_argument("--nICA", type=int, default=4)
-
-    parser.add_argument("--model", type=str, required=True)
 
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", type=str, default="./Analysis/")

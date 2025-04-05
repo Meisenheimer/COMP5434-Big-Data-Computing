@@ -14,8 +14,11 @@ from sklearn.ensemble import RandomForestClassifier
 from model import LogisticModel, RandomForest
 
 
-def loadData(filename: str, target: bool = False) -> tuple:
-    LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"]
+def loadData(filename: str, feat_selection, target: bool) -> tuple:
+    if (feat_selection):
+        LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V14", "V16", "V17", "V18", "V19", "V20", "V21", "V27", "V28"]
+    else:
+        LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"]
     data = pd.read_csv(filename)
     if (target):
         return data[LABELS].to_numpy(), data["label"].to_numpy(), data["id"].to_numpy()
@@ -25,6 +28,16 @@ def loadData(filename: str, target: bool = False) -> tuple:
 
 def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
     res = x
+    if (args.feat_selection):
+        mean = np.mean(res, axis=0)
+        std = np.std(res, axis=0)
+        index = np.zeros((res.shape[0], ))
+        for i in range(res.shape[1]):
+            upper = float(mean[i] + 3 * std[i])
+            lower = float(mean[i] - 3 * std[i])
+            index += (res[:, i] > upper)
+            index += (res[:, i] < lower)
+    res = res[index == 0]
     if (args.degree >= 2):
         n = x.shape[0]
         m = x.shape[1]
@@ -71,7 +84,7 @@ def getModel(args: argparse.Namespace) -> object:
 def train(args: argparse.Namespace) -> None:
     # load the data from csv file.
     print("Loading data.")
-    x, y, _ = loadData(os.path.join(args.data_dir, "train.csv"), True)
+    x, y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
 
     # Preprocessing
     print("Preprocessing")
@@ -80,7 +93,7 @@ def train(args: argparse.Namespace) -> None:
     # Training and testing.
     print("Training and testing.")
     score = []
-    for seed in range(1, args.epoch):
+    for seed in range(args.epoch):
         # Train and test the data with different splitting, and then take the average as the result.
         print(f"Epoch {seed}.")
         args.seed = seed
@@ -106,8 +119,8 @@ def train(args: argparse.Namespace) -> None:
 def test(args: argparse.Namespace):
     # load the data from csv file.
     print("Loading data.")
-    train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), True)
-    test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"))
+    train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
+    test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
 
     # Preprocessing
     print("Preprocessing")
@@ -159,6 +172,7 @@ if __name__ == "__main__":
     parser.add_argument("--gamma", type=float, default=1.15)
     parser.add_argument("--tol", type=float, default=1e-3)
 
+    parser.add_argument("--feat_selection", type=bool, default=False)
     parser.add_argument("--raising", type=bool, default=False)
     parser.add_argument("--degree", type=int, default=1)
 
