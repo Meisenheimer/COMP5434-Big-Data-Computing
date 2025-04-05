@@ -49,7 +49,8 @@ class LogisticModel():
                 dw += self.alpha_1 * 2.0 * ((self.w > 0).float() - 0.5)
             if (self.alpha_2 != 0.0):
                 dw += self.alpha_2 * 2.0 * self.w
-            norm = float(torch.linalg.norm(dw)) / math.sqrt(dw.shape[0])
+            norm = float(torch.abs(dw).max())
+            # norm = float(torch.linalg.norm(dw)) / math.sqrt(dw.shape[0])
             self.w -= (lr / max(1.0, norm + self.tol)) * dw
             if (k % 128 == 0):
                 bar.set_postfix({"lr": lr, "norm(Dw)": norm})

@@ -5,13 +5,12 @@ import random
 import argparse
 import numpy as np
 import pandas as pd
-import multiprocessing as mul
+from typing import Union
 
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 
-from model import LogisticModel, RandomForest
+from model import LogisticModel, DecisionTree, RandomForest
 
 
 def loadData(filename: str, feat_selection, target: bool) -> tuple:
@@ -26,39 +25,34 @@ def loadData(filename: str, feat_selection, target: bool) -> tuple:
         return data[LABELS].to_numpy(), data["id"].to_numpy()
 
 
-def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
-    res = x
-    if (args.feat_selection):
-        mean = np.mean(res, axis=0)
-        std = np.std(res, axis=0)
-        index = np.zeros((res.shape[0], ))
-        for i in range(res.shape[1]):
+def preprocess(x: np.ndarray, y: Union[np.ndarray, None], args: argparse.ArgumentParser, test: bool) -> np.ndarray:
+    res_x = x
+    res_y = y
+    if (args.feat_selection and not test):
+        mean = np.mean(res_x, axis=0)
+        std = np.std(res_x, axis=0)
+        index = np.zeros((res_x.shape[0], ))
+        for i in range(res_x.shape[1]):
             upper = float(mean[i] + 3 * std[i])
             lower = float(mean[i] - 3 * std[i])
-            index += (res[:, i] > upper)
-            index += (res[:, i] < lower)
-    res = res[index == 0]
+            index += (res_x[:, i] > upper)
+            index += (res_x[:, i] < lower)
+        res_x = res_x[index == 0]
+        res_y = res_y[index == 0]
     if (args.degree >= 2):
-        n = x.shape[0]
-        m = x.shape[1]
+        n = res_x.shape[0]
+        m = res_x.shape[1]
         tmp = np.zeros((n, m * (args.degree - 1)))
         for i in range(2, args.degree + 1):
-            tmp[:, (i-2) * m:(i-1) * m] = x ** i
-        res = np.concatenate((x, tmp), axis=1)
-    if (args.raising):
-        n = x.shape[0]
-        m = x.shape[1]
-        tmp = np.zeros((n, m * (m - 1) // 2))
-        k = 0
-        for i in range(m):
-            for j in range(i + 1, m):
-                tmp[:, k] = x[:, i] * x[:, j]
-                k += 1
-        res = np.concatenate((x, tmp), axis=1)
-    res = (res - res.min(axis=0)) / (res.max(axis=0) - res.min(axis=0))
-    res *= 2.0
-    res -= 1.0
-    return res
+            tmp[:, (i-2) * m:(i-1) * m] = res_x ** i
+        res_x = np.concatenate((res_x, tmp), axis=1)
+    res_x = (res_x - res_x.min(axis=0)) / (res_x.max(axis=0) - res_x.min(axis=0))
+    res_x *= 2.0
+    res_x -= 1.0
+    if (test):
+        return res_x
+    else:
+        return res_x, res_y
 
 
 def init(args: argparse.ArgumentParser) -> None:
@@ -74,9 +68,8 @@ def init(args: argparse.ArgumentParser) -> None:
 def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
         return LogisticModel(args)
-    elif (args.model.lower() == "randomforest"):
-        return RandomForest(args)
-        # return RandomForestClassifier(n_estimators=args.n_estimator, max_depth=args.max_depth, min_samples_split=args.min_samples_split, criterion=args.criterion, n_jobs=mul.cpu_count())
+    elif (args.model.lower() == "decisiontree"):
+        return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
     else:
         raise
 
@@ -88,7 +81,7 @@ def train(args: argparse.Namespace) -> None:
 
     # Preprocessing
     print("Preprocessing")
-    x = preprocess(x, args)
+    x, y = preprocess(x, y, args, False)
 
     # Training and testing.
     print("Training and testing.")
@@ -124,8 +117,9 @@ def test(args: argparse.Namespace):
 
     # Preprocessing
     print("Preprocessing")
-    train_x = preprocess(train_x, args)
-    test_x = preprocess(test_x, args)
+
+    train_x, train_y = preprocess(train_x, train_y, args, False)
+    test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
 
     # Training and testing.
     print("Training and testing.")
@@ -168,12 +162,11 @@ if __name__ == "__main__":
     parser.add_argument("--alpha_1", type=float, default=0.0)
     parser.add_argument("--alpha_2", type=float, default=0.0)
     parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--lr", type=float, default=1.0)
-    parser.add_argument("--gamma", type=float, default=1.15)
-    parser.add_argument("--tol", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=0.5)
+    parser.add_argument("--gamma", type=float, default=1.125)
+    parser.add_argument("--tol", type=float, default=0.0005)
 
     parser.add_argument("--feat_selection", type=bool, default=False)
-    parser.add_argument("--raising", type=bool, default=False)
     parser.add_argument("--degree", type=int, default=1)
 
     parser.add_argument("--mode", type=str, default="All")
@@ -215,6 +208,7 @@ if __name__ == "__main__":
         init(args)
         test(args)
 
-    args.log.close()
-
+    print("Total time = %f(s)" % (time.time() - start_time), file=args.log)
     print("Total time = %f(s)" % (time.time() - start_time))
+
+    args.log.close()
