@@ -1,6 +1,6 @@
-import math
 import random
 import torch
+import numpy as np
 from tqdm import tqdm
 
 DTYPE_FLT = torch.float32
@@ -64,6 +64,37 @@ class LogisticModel():
         x = self.preprocess(_x)
         x = sigmoid(x @ self.w).reshape(-1)
         return (x >= self.threshold).int().cpu()
+
+
+class MultiLogistic():
+    def __init__(self, args):
+        self.alpha_1 = args.alpha_1
+        self.alpha_2 = args.alpha_2
+        self.device = args.device
+        self.threshold = args.threshold
+
+        self.lr = args.lr
+        self.gamma = args.gamma
+        self.tol = args.tol
+
+        self.estimator = []
+        self.n_class = None
+
+    def fit(self, _x, _y):
+        self.labels = np.sort(np.unique(_y)).astype(int)
+        for label in self.labels:
+            self.estimator.append(LogisticModel(self.alpha_1, self.alpha_2, self.device, self.threshold, self.lr, self.gamma, self.tol))
+            y = np.zeros_like(_y)
+            y[_y == label] = 1
+            self.estimator[-1].fit(_x, y)
+        return self
+
+    def predict(self, _x):
+        res = torch.zeros((len(self.labels), _x.shape[0]), device=self.device, dtype=DTYPE_FLT)
+        for i in range(len(self.labels)):
+            res[i, :] = self.estimator[i].predict(_x)
+        # res = torch.argmax(res, dim=0).cpu()
+        return self.labels[torch.argmax(res, dim=0).cpu()]
 
 
 class DecisionTree():

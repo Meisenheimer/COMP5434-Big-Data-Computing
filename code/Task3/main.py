@@ -6,11 +6,12 @@ import argparse
 import numpy as np
 import pandas as pd
 from typing import Union
+from memory_profiler import profile
 
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from model import LogisticModel, DecisionTree, RandomForest
+from model import LogisticModel, DecisionTree
 
 
 def loadData(filename: str, feat_selection, target: bool) -> tuple:
@@ -28,17 +29,6 @@ def loadData(filename: str, feat_selection, target: bool) -> tuple:
 def preprocess(x: np.ndarray, y: Union[np.ndarray, None], args: argparse.ArgumentParser, test: bool) -> np.ndarray:
     res_x = x
     res_y = y
-    if (args.feat_selection and not test):
-        mean = np.mean(res_x, axis=0)
-        std = np.std(res_x, axis=0)
-        index = np.zeros((res_x.shape[0], ))
-        for i in range(res_x.shape[1]):
-            upper = float(mean[i] + 3 * std[i])
-            lower = float(mean[i] - 3 * std[i])
-            index += (res_x[:, i] > upper)
-            index += (res_x[:, i] < lower)
-        res_x = res_x[index == 0]
-        res_y = res_y[index == 0]
     if (args.degree >= 2):
         n = res_x.shape[0]
         m = res_x.shape[1]
@@ -67,7 +57,7 @@ def init(args: argparse.ArgumentParser) -> None:
 
 def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
-        return LogisticModel(args)
+        return LogisticModel(args.alpha_1, args.alpha_2, args.device, args.threshold, args.lr, args.gamma, args.tol)
     elif (args.model.lower() == "decisiontree"):
         return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
     else:
@@ -109,6 +99,7 @@ def train(args: argparse.Namespace) -> None:
     return None
 
 
+@profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
 def test(args: argparse.Namespace):
     # load the data from csv file.
     print("Loading data.")

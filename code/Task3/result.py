@@ -9,9 +9,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     folder_list = os.listdir(args.dir)
     for folder in folder_list:
+        if (not os.path.isdir(os.path.join(args.dir, folder))):
+            continue
         with open(os.path.join(args.dir, folder, "log.txt"), "r") as fp:
             text = fp.readlines()
         model = re.search(r"model='.+?',", text[0], re.M | re.I).group(0)[7:-2]
+        print(folder)
         if (model.lower() == "logistic"):
             alpha_1 = re.search(r"alpha_1=.+?,", text[0], re.M | re.I).group(0)
             alpha_2 = re.search(r"alpha_2=.+?,", text[0], re.M | re.I).group(0)
