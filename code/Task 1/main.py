@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-from model import LogisticModel
+from model import LogisticModel, RandomForest
 
 
 def loadData(filename: str, target: bool = False) -> tuple:
@@ -60,14 +60,15 @@ def init(args: argparse.ArgumentParser) -> None:
 
 def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
-        if (args.alpha_1 == 0.0 and args.alpha_2 == 0.0):
-            return LogisticRegression(penalty=None, max_iter=args.max_iter, solver="saga")  # 0.966186/0.964740
-        else:
-            return LogisticRegression(penalty="elasticnet", C=args.alpha_1 + args.alpha_2, max_iter=args.max_iter, solver="saga", l1_ratio=args.alpha_1 / (args.alpha_1 + args.alpha_2))
-    elif (args.model.lower() == "randomforest"):
-        return RandomForestClassifier(n_estimators=args.n_estimator, n_jobs=mul.cpu_count())
-    elif (args.model.lower() == "minelogistic"):
+        # if (args.alpha_1 == 0.0 and args.alpha_2 == 0.0):
+        #     return LogisticRegression(penalty=None, max_iter=args.max_iter, solver="saga")
+        # else:
+        #     return LogisticRegression(penalty="elasticnet", C=args.alpha_1 + args.alpha_2, max_iter=args.max_iter, solver="saga", l1_ratio=args.alpha_1 / (args.alpha_1 + args.alpha_2))
         return LogisticModel(args)
+
+    elif (args.model.lower() == "randomforest"):
+        # return RandomForestClassifier(n_estimators=args.n_estimator, max_depth=args.max_depth, min_samples_split=args.min_samples_split, criterion=args.criterion, n_jobs=mul.cpu_count())
+        return RandomForest(args)
     else:
         raise
 
@@ -93,6 +94,8 @@ def train(args: argparse.Namespace) -> None:
         train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=args.test_size)
 
         model = getModel(args)
+        # print("train_x shape:", train_x.shape)
+        # print("train_y shape:", train_y.shape)
         model.fit(train_x, train_y)
         pred_y = model.predict(test_x)
 
@@ -147,7 +150,10 @@ if __name__ == "__main__":
 
     parser.add_argument("--data_dir", type=str, default="")
 
-    parser.add_argument("--n_estimator", type=int, default=10)
+    parser.add_argument("--n_estimator", type=int, default=20)
+    parser.add_argument("--max_depth", type=int, default=10)
+    parser.add_argument("--min_samples_split", type=int, default=2)
+    parser.add_argument("--criterion", type=str, default="gini")
 
     parser.add_argument("--alpha_1", type=float, default=0.0)
     parser.add_argument("--alpha_2", type=float, default=0.0)
@@ -160,13 +166,15 @@ if __name__ == "__main__":
     parser.add_argument("--degree", type=int, default=1)
 
     parser.add_argument("--mode", type=str, default="All")
-    parser.add_argument("--model", type=str, default="minelogistic")
+    # parser.add_argument("--model", type=str, default="logistic")
+    parser.add_argument("--model", type=str, default="randomforest")
 
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--epoch", type=int, default=33)
+    parser.add_argument("--epoch", type=int, default=25)
     parser.add_argument("--test_size", type=float, default=0.2)
 
-    parser.add_argument("--device", type=str, default="cuda")
+    # parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--device", type=str, default="cpu")
 
     args = parser.parse_args()
     args.time = time.localtime()
