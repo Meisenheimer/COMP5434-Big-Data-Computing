@@ -49,7 +49,8 @@ class LogisticModel():
                 dw += self.alpha_1 * 2.0 * ((self.w > 0).float() - 0.5)
             if (self.alpha_2 != 0.0):
                 dw += self.alpha_2 * 2.0 * self.w
-            norm = float(torch.linalg.norm(dw)) / math.sqrt(dw.shape[0])
+            norm = float(torch.abs(dw).max())
+            # norm = float(torch.linalg.norm(dw)) / math.sqrt(dw.shape[0])
             self.w -= (lr / max(1.0, norm + self.tol)) * dw
             if (k % 128 == 0):
                 bar.set_postfix({"lr": lr, "norm(Dw)": norm})
@@ -160,7 +161,7 @@ class DecisionTree():
         return {"class": torch.argmax(counts).item()}
 
     def predict(self, x):
-        # x = torch.tensor(x, device=self.device, dtype=DTYPE_FLT)
+        x = torch.tensor(x, device=self.device, dtype=DTYPE_FLT)
         return torch.tensor([self._traverse_tree(t, self.tree) for t in x]).cpu()
 
     def _traverse_tree(self, x, node):
@@ -170,33 +171,3 @@ class DecisionTree():
             return self._traverse_tree(x, node["left"])
         else:
             return self._traverse_tree(x, node["right"])
-
-
-class RandomForest():
-    def __init__(self, args):
-        self.n_estimator = args.n_estimator
-        self.max_depth = args.max_depth
-        self.min_samples_split = args.min_samples_split
-        self.min_samples_leaf = args.min_samples_leaf
-        self.criterion = args.criterion
-        self.device = args.device
-        self.threshold = args.threshold
-        self.n_threshold = args.n_threshold
-        self.split_data_size = args.split_data_size
-        self.estimator = []
-        self.feat_index = []
-
-    def fit(self, x, y):
-        for i in tqdm(range(self.n_estimator)):
-            index_data = random.sample(range(x.shape[0]), round(x.shape[0] * self.split_data_size))
-            index_feat = random.sample(range(x.shape[1]), round(math.sqrt(x.shape[1])))
-            self.feat_index.append(index_feat)
-            self.estimator.append(DecisionTree(self.max_depth, self.min_samples_split, self.min_samples_leaf, self.criterion, self.device, self.n_threshold))
-            self.estimator[i].fit(x[index_data][:, index_feat], y[index_data])
-        return self
-
-    def predict(self, x):
-        res = torch.zeros(self.n_estimator, x.shape[0], device=self.device, dtype=DTYPE_FLT)
-        for i in tqdm(range(self.n_estimator)):
-            res[i] = self.estimator[i].predict(x[:, self.feat_index[i]])
-        return (res.sum(dim=0) >= self.threshold).int().cpu()

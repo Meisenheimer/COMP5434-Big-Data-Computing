@@ -5,25 +5,46 @@ import random
 import argparse
 import numpy as np
 import pandas as pd
-import multiprocessing as mul
 from memory_profiler import profile
-
 
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
 
-from analysis import Engineering
-from model import LogisticModel, RandomForest
+from model import LogisticModel, DecisionTree
 
 
 def loadData(filename: str, target: bool = False) -> tuple:
-    data = pd.read_csv(filename)
+    df = pd.read_csv(filename)
+
+    df['ExtracurricularActivities'] = df['ExtracurricularActivities'].apply(lambda x: 1 if x == 'Yes' else 0)
+    df['PlacementTraining'] = df['PlacementTraining'].apply(lambda x: 1 if x == 'Yes' else 0)
+
+    if target:
+        df[['ExtracurricularActivities', 'PlacementTraining']].head()
+        df.drop('StudentID', axis=1, inplace=True)
+
+    # new features
+    df['Practical Experiences'] = df['Internships'] + df['Projects'] + df['Workshops/Certifications']
+    df['I+P'] = df['Internships'] + df['Projects']
+    df['I+W'] = df['Internships'] + df['Workshops/Certifications']
+    df['P+W'] = df['Projects'] + df['Workshops/Certifications']
+
+    df['Aptitude*SoftSkills'] = df['AptitudeTestScore'] * df['SoftSkillsRating']
+
+    df['Progress between SCC and HSC'] = df['HSC_Marks'] - df['SSC_Marks']
+
+    df['Internships less than 2'] = np.where(df['Internships'] < 2, 1, 0)
+    df.drop('Internships', axis=1, inplace=True)
+
+    df['Workshops/Certifications less than 2'] = np.where(df['Workshops/Certifications'] < 2, 1, 0)
+    df.drop('Workshops/Certifications', axis=1, inplace=True)
+
+    df.drop('Progress between SCC and HSC', axis=1, inplace=True)
+
     if (target):
-        return data.drop(['label'], axis=1).to_numpy(), data["label"].to_numpy()
+        return df.drop(['label'], axis=1).to_numpy(), df["label"].to_numpy()
     else:
-        return data.drop(['StudentID'], axis=1).to_numpy(), data["StudentID"].to_numpy()
+        return df.drop(['StudentID'], axis=1).to_numpy(), df["StudentID"].to_numpy()
 
 
 def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
@@ -35,17 +56,9 @@ def preprocess(x: np.ndarray, args: argparse.ArgumentParser) -> np.ndarray:
         for i in range(2, args.degree + 1):
             tmp[:, (i-2) * m:(i-1) * m] = x ** i
         res = np.concatenate((x, tmp), axis=1)
-    if (args.raising):
-        n = x.shape[0]
-        m = x.shape[1]
-        tmp = np.zeros((n, m * (m - 1) // 2))
-        k = 0
-        for i in range(m):
-            for j in range(i + 1, m):
-                tmp[:, k] = x[:, i] * x[:, j]
-                k += 1
-        res = np.concatenate((x, tmp), axis=1)
-    res = (res - res.min(axis=0)) / (res.max(axis=0) - res.min(axis=0))
+    r = (res.max(axis=0) - res.min(axis=0))
+    r[r == 0] = 1
+    res = (res - res.min(axis=0)) / r
     res *= 2.0
     res -= 1.0
     return res
@@ -63,15 +76,9 @@ def init(args: argparse.ArgumentParser) -> None:
 
 def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
-        # if (args.alpha_1 == 0.0 and args.alpha_2 == 0.0):
-        #     return LogisticRegression(penalty=None, max_iter=args.max_iter, solver="saga")
-        # else:
-        #     return LogisticRegression(penalty="elasticnet", C=args.alpha_1 + args.alpha_2, max_iter=args.max_iter, solver="saga", l1_ratio=args.alpha_1 / (args.alpha_1 + args.alpha_2))
         return LogisticModel(args)
-
-    elif (args.model.lower() == "randomforest"):
-        # return RandomForestClassifier(n_estimators=args.n_estimator, max_depth=args.max_depth, min_samples_split=args.min_samples_split, criterion=args.criterion, n_jobs=mul.cpu_count())
-        return RandomForest(args)
+    elif (args.model.lower() == "decisiontree"):
+        return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
     else:
         raise
 
@@ -79,10 +86,7 @@ def getModel(args: argparse.Namespace) -> object:
 def train(args: argparse.Namespace) -> None:
     # load the data from csv file.
     print("Loading data.")
-    work = Engineering()
-    df = work.eda('train.csv')
-    work.feature_engineering(df, target=True)
-    x, y = loadData(os.path.join(args.data_dir, "train_new.csv"), True)
+    x, y = loadData(os.path.join(args.data_dir, "train.csv"), True)
 
     # Preprocessing
     print("Preprocessing")
@@ -120,11 +124,8 @@ def train(args: argparse.Namespace) -> None:
 def test(args: argparse.Namespace):
     # load the data from csv file.
     print("Loading data.")
-    work = Engineering()
-    df = pd.read_csv("test.csv")
-    work.feature_engineering(df, target=False)
-    train_x, train_y = loadData(os.path.join(args.data_dir, "train_new.csv"), True)
-    test_x, test_id = loadData(os.path.join(args.data_dir, "test_new.csv"))
+    train_x, train_y = loadData(os.path.join(args.data_dir, "train.csv"), True)
+    test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"))
 
     # Preprocessing
     print("Preprocessing")
@@ -153,13 +154,13 @@ def test(args: argparse.Namespace):
 
     return None
 
+
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--data_dir", type=str, default="")
+    parser.add_argument("--data_dir", type=str, default="poly-u-comp-5434-20242-project-task-1")
 
-    parser.add_argument("--n_estimator", type=int, default=1)
     parser.add_argument("--max_depth", type=int, default=12)
     parser.add_argument("--min_samples_split", type=int, default=2)
     parser.add_argument("--min_samples_leaf", type=int, default=1)
@@ -171,10 +172,9 @@ if __name__ == "__main__":
     parser.add_argument("--alpha_2", type=float, default=0.0)
     parser.add_argument("--threshold", type=float, default=0.5)
     parser.add_argument("--lr", type=float, default=0.1)
-    parser.add_argument("--gamma", type=float, default=1.15)
-    parser.add_argument("--tol", type=float, default=1e-3)
+    parser.add_argument("--gamma", type=float, default=1.125)
+    parser.add_argument("--tol", type=float, default=0.0005)
 
-    parser.add_argument("--raising", type=bool, default=False)  # Ture:  Generate cross terms of original features (pairwise multiplication)
     parser.add_argument("--degree", type=int, default=1)        # If >= 2, generate high-order terms of the original features
 
     parser.add_argument("--mode", type=str, default="All")
@@ -182,11 +182,10 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="randomforest")
 
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--epoch", type=int, default=20)
+    parser.add_argument("--epoch", type=int, default=5)
     parser.add_argument("--test_size", type=float, default=0.2)
 
-    # parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--device", type=str, default="cuda")
 
     args = parser.parse_args()
     args.time = time.localtime()
@@ -218,6 +217,7 @@ if __name__ == "__main__":
         init(args)
         test(args)
 
-    args.log.close()
-
+    print("\nTotal time = %f(s)" % (time.time() - start_time), file=args.log)
     print("\nTotal time = %f(s)" % (time.time() - start_time))
+
+    args.log.close()
