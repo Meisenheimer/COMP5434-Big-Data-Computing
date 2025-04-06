@@ -15,7 +15,7 @@ Training data includes training records with ground-truth class labels. Each row
 
 - label: It is our classification target, indicating whether this student is placed (1 indicates placed.)
 
-Your goal is to train a model to predict (classify) whether each student in another test dataset will be placed (i.e., can find a job) based on the training set. Evaluation is based on the Macro-F1 metric. 将Macro-F1优化到0.85以上甚至0.95以上
+The goal is to train a model to predict (classify) whether each student in another test dataset will be placed (i.e., can find a job) based on the training set. Evaluation is based on the Macro-F1 metric.
 
 Number of samples in the training set: 7093
 
@@ -24,15 +24,15 @@ Number of students in another test set: 2907
 Hints:
 
 - Note that the training data may be dirty
-- You may consider the following process: exploration(preliminary analysis such as visualization), data processing(data cleaning, feature extraction and feature scaling), 建模调参并对比模型Macro-F1表现（结果部分输出并可视化）, insights and actions based on the results
+- Consider the following process: exploration (preliminary analysis such as visualization), data processing (data cleaning, feature extraction and feature scaling), modeling, tuning, comparing Macro-F1 (results visualization), insights based on the results
 
-本数据集中需要关注的影响Macro-F1表现的因素：
+Some factors that need to be focused：
 
-- **label类别不平衡**
-- 特征的预测能力，除了独热编码，是否有必要构造新特征，计算重要特征，剔除相关度低和低贡献特征
-- 模型选择与复杂度，参数调优
-- 如果训练集（7093 样本）和测试集（2907 样本）的特征分布或类别比例差异较大，模型在测试集上的 Macro-F1 会下降
-- 样本数量与多样性，检查特征组合的覆盖率？
+- Label category imbalance
+- Is it necessary to construct new features, calculate important features, and eliminate low correlation and low contribution features for the predictive ability of features, in addition to single hot encoding
+- Model selection and complexity, parameter tuning
+- If there is a significant difference in the feature distribution or category ratio between the training set (7093 samples) and the test set (2907 samples), the Macro-F1 of the model on the test set will decreas
+- Sample size and diversity, check the coverage of feature combinations?
 
 Sample Submission: sample_submission.csv
 
@@ -40,11 +40,3 @@ Sample Submission: sample_submission.csv
 - This file includes two columns.
 o StudentID: the identifier of each record in test.csv.
 o label: the prediction of this record.
-
-
-
-You can use low-level third-party packages to facilitate your implementation.
-
-Your implementation should involve sufficient technical details developed by
-yourselves.
-	o DO NOT simply call ready-to-use classification models provided in existing packages, as a Blackbox, to finish the project. 

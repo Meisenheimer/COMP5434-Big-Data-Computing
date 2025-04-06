@@ -1,0 +1,42 @@
+Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task 1\main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   119     35.9 MiB     35.9 MiB           1   @profile(stream=open("result/mem.txt", "a", encoding="UTF-8"))
+   120                                         def test(args: argparse.Namespace):
+   121                                             # load the data from csv file.
+   122     35.9 MiB      0.0 MiB           1       print("Loading data.")
+   123     35.9 MiB      0.0 MiB           1       work = Engineering()
+   124     43.1 MiB      7.1 MiB           1       df = pd.read_csv("test.csv")
+   125     47.9 MiB      4.8 MiB           1       work.feature_engineering(df, target=False)
+   126     48.6 MiB      0.7 MiB           1       train_x, train_y = loadData(os.path.join(args.data_dir, "train_new.csv"), True)
+   127     48.6 MiB      0.1 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test_new.csv"))
+   128                                         
+   129                                             # Preprocessing
+   130     48.6 MiB      0.0 MiB           1       print("Preprocessing")
+   131     49.3 MiB      0.7 MiB           1       train_x = preprocess(train_x, args)
+   132     49.3 MiB      0.0 MiB           1       test_x = preprocess(test_x, args)
+   133                                         
+   134                                             # Training and testing.
+   135     49.3 MiB      0.0 MiB           1       print("Training and testing.")
+   136     49.3 MiB      0.0 MiB           1       score = 0.0
+   137                                         
+   138     49.3 MiB      0.0 MiB           1       model = getModel(args)
+   139     49.9 MiB      0.5 MiB           1       model.fit(train_x, train_y)
+   140     49.9 MiB      0.1 MiB           1       pred_y = model.predict(train_x)
+   141                                         
+   142     50.7 MiB      0.8 MiB           1       score = f1_score(train_y, pred_y, average="macro")
+   143                                         
+   144     50.7 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
+   145     50.7 MiB      0.0 MiB           1       print("Train Score = %f." % score)
+   146                                         
+   147     50.8 MiB      0.1 MiB           1       pred_y = model.predict(test_x)
+   148                                         
+   149     51.0 MiB      0.1 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
+   150     50.9 MiB      0.0 MiB           1           print("StudentID,label", file=fp)
+   151     51.0 MiB      0.0 MiB        2908           for i in range(len(test_id)):
+   152     51.0 MiB      0.1 MiB        2907               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
+   153                                         
+   154     51.0 MiB      0.0 MiB           1       return None
+
+

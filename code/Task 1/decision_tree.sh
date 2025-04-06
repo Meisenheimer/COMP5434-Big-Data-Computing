@@ -1,0 +1,3 @@
+python main.py --model randomforest --n_estimator 1 --max_depth 10 --min_samples_split 1 --n_threshold 64 --criterion gini  --device cpu
+python main.py --model randomforest --n_estimator 1 --max_depth 10 --min_samples_split 1 --n_threshold 128 --criterion gini  --device cpu
+python main.py --model randomforest --n_estimator 1 --max_depth 12 --min_samples_split 1 --n_threshold 64 --criterion gini  --device cpu

@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-from pre_work import Engineering
+from analysis import Engineering
 from model import LogisticModel, RandomForest
 
 
@@ -76,7 +76,6 @@ def getModel(args: argparse.Namespace) -> object:
         raise
 
 
-@profile
 def train(args: argparse.Namespace) -> None:
     # load the data from csv file.
     print("Loading data.")
@@ -117,6 +116,7 @@ def train(args: argparse.Namespace) -> None:
     return None
 
 
+@profile(stream=open("result/mem.txt", "a", encoding="UTF-8"))
 def test(args: argparse.Namespace):
     # load the data from csv file.
     print("Loading data.")
@@ -160,12 +160,12 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str, default="")
 
     parser.add_argument("--n_estimator", type=int, default=1)
-    parser.add_argument("--max_depth", type=int, default=10)
+    parser.add_argument("--max_depth", type=int, default=12)
     parser.add_argument("--min_samples_split", type=int, default=2)
     parser.add_argument("--min_samples_leaf", type=int, default=1)
-    parser.add_argument("--n_threshold", type=int, default=128)
+    parser.add_argument("--n_threshold", type=int, default=64)
     parser.add_argument("--split_data_size", type=float, default=1)
-    parser.add_argument("--criterion", type=str, default="entropy")
+    parser.add_argument("--criterion", type=str, default="gini")
 
     parser.add_argument("--alpha_1", type=float, default=0.0)
     parser.add_argument("--alpha_2", type=float, default=0.0)
@@ -174,8 +174,8 @@ if __name__ == "__main__":
     parser.add_argument("--gamma", type=float, default=1.15)
     parser.add_argument("--tol", type=float, default=1e-3)
 
-    parser.add_argument("--raising", type=bool, default=False)  # Ture: 生成原始特征的交叉项（两两相乘）
-    parser.add_argument("--degree", type=int, default=1)        # 如果大于等于2，会生成原始特征的高次项
+    parser.add_argument("--raising", type=bool, default=False)  # Ture:  Generate cross terms of original features (pairwise multiplication)
+    parser.add_argument("--degree", type=int, default=1)        # If >= 2, generate high-order terms of the original features
 
     parser.add_argument("--mode", type=str, default="All")
     # parser.add_argument("--model", type=str, default="logistic")
