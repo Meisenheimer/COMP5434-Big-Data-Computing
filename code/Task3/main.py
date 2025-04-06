@@ -11,7 +11,7 @@ from memory_profiler import profile
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from model import LogisticModel, DecisionTree
+from model import LogisticModel, DecisionTree, MultilayerPerceptron
 
 
 def loadData(filename: str, feat_selection, target: bool) -> tuple:
@@ -60,6 +60,8 @@ def getModel(args: argparse.Namespace) -> object:
         return LogisticModel(args.alpha_1, args.alpha_2, args.device, args.threshold, args.lr, args.gamma, args.tol)
     elif (args.model.lower() == "decisiontree"):
         return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
+    elif (args.model.lower() == "mlp"):
+        return MultilayerPerceptron(args)
     else:
         raise
 

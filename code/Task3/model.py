@@ -1,7 +1,11 @@
 import math
 import random
 import torch
+from torch import nn
 from tqdm import tqdm
+from torch import optim
+
+from sklearn.metrics import f1_score
 
 DTYPE_FLT = torch.float32
 DTYPE_INT = torch.int8
@@ -171,3 +175,59 @@ class DecisionTree():
             return self._traverse_tree(x, node["left"])
         else:
             return self._traverse_tree(x, node["right"])
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size, dropout=0.2):
+        super(MLP, self).__init__()
+        self.model = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(input_size, hidden_size),
+            nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, hidden_size),
+            nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, output_size),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class MultilayerPerceptron():
+    def __init__(self, args):
+        self.lr = args.lr
+        self.device = args.device
+        self.threshold = args.threshold
+        self.batch_size = 256
+        self.model = None
+
+    def fit(self, _x, _y):
+        x = torch.tensor(_x, dtype=DTYPE_FLT, device=self.device)
+        y = torch.tensor(_y, dtype=DTYPE_FLT, device=self.device)
+        loss_fn = torch.nn.BCELoss()
+        self.model = MLP(_x.shape[1], 1, 4).to(self.device)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
+        for epoch in range(8):
+            self.model.train()
+            self.model.requires_grad_()
+            self.model.zero_grad()
+            for index in tqdm(range(0, x.shape[0], self.batch_size)):
+                optimizer.zero_grad()
+                output = self.model(x[index: index + self.batch_size])
+                loss = loss_fn(output.reshape(-1), y[index: index + self.batch_size])
+                loss.backward()
+                optimizer.step()
+
+            self.model.eval()
+            output = self.model(x)
+            print(f"Epoch {epoch}: F1 Score = {f1_score(_y, (output >= self.threshold).int().cpu(), average='macro')}")
+        self.model.eval()
+
+    def predict(self, _x):
+        x = torch.tensor(_x, dtype=DTYPE_FLT, device=self.device)
+        y = torch.zeros(_x.shape[0], dtype=DTYPE_FLT, device=self.device)
+        output = self.model(x).reshape(-1)
+        return (output >= self.threshold).int().cpu()
