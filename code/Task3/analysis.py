@@ -96,39 +96,30 @@ def main(args: argparse.Namespace) -> None:
     for i in index:
         tick = np.arange(0, x.shape[1], 1)
         pyplot.plot(tick, x[i, :], color='b' if y[i] == 1 else 'r', alpha=0.25, linewidth=0.5)
-    for i in range(x.shape[1]):
-        upper = min(float(mean[i] + 3 * std[i]), 1)
-        lower = max(float(mean[i] - 3 * std[i]), -1)
-        pyplot.hlines(y=(lower, mean[i], upper), xmin=i - 0.5, xmax=i + 0.5, color="g", linestyles="--", linewidth=0.5)
-        # pyplot.hlines(y=(lower, ), xmin=i - 0.5, xmax=i + 0.5, color="r", linestyles="--", linewidth=0.5)
-        # pyplot.hlines(y=(mean[i], ), xmin=i - 0.5, xmax=i + 0.5, color="g", linestyles="--", linewidth=0.5)
-        # pyplot.hlines(y=(upper, ), xmin=i - 0.5, xmax=i + 0.5, color="b", linestyles="--", linewidth=0.5)
     pyplot.savefig(os.path.join(args.output, f"PC.jpg"), dpi=720, bbox_inches="tight")
     pyplot.close()
 
     # Hist
-    mean = np.mean(x, axis=0)
-    std = np.std(x, axis=0)
-    index = np.zeros((x.shape[0], ))
+    print("Hist")
+    LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"]
     for i in range(x.shape[1]):
-        upper = float(mean[i] + 3 * std[i])
-        lower = float(mean[i] - 3 * std[i])
+        index = np.zeros((x.shape[0], ))
+        lower, upper = np.percentile(x[:, i], (5, 95))
         index += (x[:, i] > upper)
         index += (x[:, i] < lower)
-    x = x[index == 0]
-    y = y[index == 0]
-    print(x.shape)
-    print(y.shape)
-    for i in range(x.shape[1]):
-        data = x[:, i]
+        data = x[index == 0, i]
+        data_y = y[index == 0]
+        y_max = 0
         pyplot.clf()
-        pyplot.figure(figsize=[10, 3])
+        pyplot.figure(figsize=[5, 3])
         pyplot.grid()
-        # pyplot.xlim([-1, 1])
-        pyplot.hist(data[y == 0], color="r", label="0", alpha=0.5, density=True, bins=50)
-        pyplot.vlines(np.percentile(data[y == 0], (25, 50, 75)), ymin=0, ymax=0.9, color="r", linestyles="--")
-        pyplot.hist(data[y == 1], color="b", label="1", alpha=0.5, density=True, bins=50)
-        pyplot.vlines(np.percentile(data[y == 1], (25, 50, 75)), ymin=0, ymax=0.9, color="b", linestyles="--")
+        pyplot.xlabel(f"{LABELS[i]}")
+        h, _, _ = pyplot.hist(data[data_y == 0], color="r", label="0", alpha=0.5, bins=50)
+        y_max = max(y_max, max(h))
+        h, _, _ = pyplot.hist(data[data_y == 1], color="b", label="1", alpha=0.5, bins=50)
+        y_max = max(y_max, max(h))
+        pyplot.vlines(np.percentile(data[data_y == 0], (25, 50, 75)), ymin=0, ymax=y_max, color="r", linestyles="--")
+        pyplot.vlines(np.percentile(data[data_y == 1], (25, 50, 75)), ymin=0, ymax=y_max, color="b", linestyles="--")
         pyplot.legend()
         pyplot.savefig(os.path.join(args.output, f"Hist-{i}.jpg"), dpi=720, bbox_inches="tight")
         pyplot.close()

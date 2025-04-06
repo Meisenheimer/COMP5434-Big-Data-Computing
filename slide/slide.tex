@@ -52,13 +52,13 @@
 {
   \leavevmode%
   \hbox{%
-  \begin{beamercolorbox}[wd=0.5\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
-    \usebeamerfont{author in head/foot}\insertsection
+  \begin{beamercolorbox}[wd=0.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertshortauthor
   \end{beamercolorbox}%
-  % \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
-  %   \usebeamerfont{title in head/foot}\inserttitle
-  % \end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=0.5\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+  \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertsection
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=0.3\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
     \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
     \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
   \end{beamercolorbox}}%
@@ -72,147 +72,240 @@
 \section*{Cover}
 \frame{\titlepage}
 
-% \section*{Contents}
-% \begin{frame}{Contents}
-%   \tableofcontents
-% \end{frame}
+\section*{Contents}
+\begin{frame}{Contents}
+  \tableofcontents
+\end{frame}
 
-\section{Task-1}
+\section{Problem definition}
 
-\subsection{Problem definition}
-
-\begin{frame}{Task-1 - Problem definition}
+\begin{frame}{Problem definition}
 
   \begin{itemize}
-    \item Dataset: the academic and training performance of students;
-    \item Goal: train a model to predict whether each student will be placed (i.e., can find a job).
+    \item \textbf{Task 1}: Given the dataset including features (e.g. academic metrics, aptitude scores, and soft skill ratings) of each student, the goal is to predict whether a student will be successfully placed in a job.  \vspace{.25cm}
+    \item \textbf{Task 2}: \vspace{.25cm} % TODO.
+    \item \textbf{Task 3}: Given the anonymized numerical features with the transaction amount, the goal is to detect fraudulent transactions. \vspace{.25cm}
   \end{itemize}
 
 \end{frame}
 
-\subsection{Prepare}
+\section{Data Prepare}
 
-\begin{frame}{Task-1 - Prepare - Data distribution}
+\subsection{Pearson, Kendall and Spearman correlation coefficient}
 
-  % \begin{figure}[H]
-  %   \centering
-  %   \includegraphics[width=0.8\textwidth]{} \\
-  %   \includegraphics[width=0.8\textwidth]{}
-  %   \caption{Data distribution.}
-  % \end{figure}
+\begin{frame}{Pearson, Kendall and Spearman correlation coefficient}
 
-\end{frame}
-
-\begin{frame}{Task-1 - Prepare - Correlation coefficient}
-
-  % \begin{figure}[H]
-  %   \centering
-  %   \includegraphics[width=0.8\textwidth]{}
-  %   \caption{Correlation coefficient.}
-  % \end{figure}
+  \begin{itemize}
+    \item \textbf{Pearson correlation coefficient}: Measures linear correlation between two sets of data; Sensitive to the data. \vspace{.25cm}
+    \item \textbf{Kendall correlation coefficient}: Measures the rank correlation; Robust to outliers; Only effective for monotonic relationships; More robust to ties and suitable for smaller datasets. \vspace{.25cm}
+    \item \textbf{Spearman correlation coefficient}: Measures the rank correlation; Robust to outliers; Only effective for monotonic relationships; Can be influenced more by large tied ranks and suitable for larger datasets. \vspace{.25cm}
+  \end{itemize}
 
 \end{frame}
 
-\subsection{Analyze}
+\subsection{$k$-nearest neighbors imputer}
 
-\begin{frame}{Task-1 - Analyze - Logistic Regression}
-  Given the dataset ${(\mathbf{x}_i, y_i)}_{i=1}^n$, the logistic regression aims to fit the function
+\begin{frame}{$k$-nearest neighbors imputer}
 
-  $$
-    f(\mathbf{x}) = \frac{1}{1 + \exp(-(\mathbf{x}^T \mathbf{w} + b))}
-  $$
+  The $k$-nearest neighbors imputer estimating the missing values using the $k$ nearest neighbors which: \vspace{.25cm}
 
-  with the binary cross entropy loss function
+  \begin{itemize}
+    \item Works with both numerical and categorical data; \vspace{.25cm}
+    \item Don't need any assumption about the data distribution; \vspace{.25cm}
+    \item Can be slow for large datasets; \vspace{.25cm}
+    \item Sensitive to the neighbors and the distance metric. \vspace{.25cm}
+  \end{itemize}
 
-  $$
-    \text{loss}\left({(x_i, y_i)}_{i=1}^n\right) = \sum_{i=1}^n \left(- y_i \log (f(x_i)) - (1 - y_i) \log (1 - f(x_i))\right).
-  $$
 \end{frame}
 
-\subsection{Performance}
+\subsection{Dimension raising}
 
-\begin{frame}{Task-1 - Performance}
+\begin{frame}{Dimension raising}
+
+  In order to deal with the nonlinearity with the logistic regression, we use the dimension raising where for scalar data $x_i$ and a given degree $d$, we compute a vector
+
+  $$
+    (x_i, x_i^2, \dots, x_i^d)
+  $$
+
+  as the new data.
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{./figure/Sample-Raising-1.jpg}
+    \includegraphics[width=0.4\textwidth]{./figure/Sample-Raising-2.jpg}
+    \caption{Example for dimension raising. The left shows that origin data, where the data is not linearly separable, while the right shows the data after dimension raising, where the $y_2$ is easy to be separated by a line.}
+  \end{figure}
+
+\end{frame}
+
+\section{Data Analysis}
+
+\begin{frame}{Logistic regression}
+
+  The logistic regression is a widely used linear classification model which: \vspace{.25cm}
+
+  \begin{itemize}
+    \item Will be less prone to overfitting; \vspace{.25cm}
+    \item Can't catch the nonlinearity; \vspace{.25cm}
+    \item Might be sensitive to the outliers; \vspace{.25cm}
+    \item Can be easily expanded to categorical variables. \vspace{.25cm}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Decision tree}
+
+  The decision tree is a decision support recursive partitioning structure which: \vspace{.25cm}
+
+  \begin{itemize}
+    \item Don't require normalization or standardization of data; \vspace{.25cm}
+    \item Can handle both categorical and numerical data; \vspace{.25cm}
+    \item Will be prone to overfitting and sensitive to the noise; \vspace{.25cm}
+    \item Not suitable for large dataset. \vspace{.25cm}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Multilayer perceptron (MLP)}
+
+  The multilayer perceptron (MLP) is a basic kind of neural network which: \vspace{.25cm}
+
+  \begin{itemize}
+    \item Can handle nonlinearity (or approximate any function); \vspace{.25cm}
+    \item Can automatically extract features during training; \vspace{.25cm}
+    \item Can handle large datasets; \vspace{.25cm}
+    \item Will be sensitive to hyperparameters and noise. \vspace{.25cm}
+  \end{itemize}
+
+\end{frame}
+
+\section{Solution}
+
+\subsection{Solution - Task 1}
+
+\begin{frame}{Task 1 - Overview}
+
+\end{frame}
+
+\subsection{Solution - Task 2}
+
+\begin{frame}{Task 2 - Overview}
+
+\end{frame}
+
+\subsection{Solution - Task 3}
+
+\begin{frame}{Task 3 - Overview}
+
+  \begin{figure}
+    \begin{tikzpicture}[minimum width=1.75cm, minimum height=1.25cm, font=\scriptsize]
+      \node[draw, align=center, rounded corners]  (P)   at ( 0,  0.0)    {Prepare};
+      \node[draw, align=center, rounded corners]  (D)   at ( 0,  1.5)    {Distribution \\ Analysis};
+      \node[draw, align=center, rounded corners]  (C)   at (-1, -1.5)    {Correlation \\ Coefficient};
+      \node[draw, align=center, rounded corners]  (F)   at ( 1, -1.5)    {Feature \\ Selection};
+
+      \node[draw, align=center, rounded corners]  (M)   at ( 4,  0.0)    {Analyze};
+      \node[draw, align=center, rounded corners]  (LR)  at ( 4,  1.5)    {Logistic \\ Regression};
+      \node[draw, align=center, rounded corners]  (MLP) at ( 4, -1.5)    {MLP};
+
+      \node[draw, align=center, rounded corners]  (E)   at ( 7,  0.0)    {Evaluation \\ (Macro F1 Score)};
+
+      \draw[->] (P) -- (M);
+
+      \draw[-]  (P) -- (D);
+      \draw[-]  (P) -- (C);
+      \draw[-]  (P) -- (F);
+
+      \draw[-]  (M) -- (LR);
+      \draw[-]  (M) -- (MLP);
+
+      \draw[->] (M) -- (E);
+    \end{tikzpicture}
+    \caption{Overview Flowchart.}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}{Task 3 - Distribution Analysis}
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/Task3/Analysis/PC.jpg} \\
+    \includegraphics[width=0.3\textwidth]{../code/Task3/Analysis/Hist-9.jpg}
+    \includegraphics[width=0.3\textwidth]{../code/Task3/Analysis/Hist-13.jpg}
+    \includegraphics[width=0.3\textwidth]{../code/Task3/Analysis/Hist-16.jpg}
+    \caption{Data visualization for task 3. The top shows the parallel coordinate plot for each features, and the below shows some features that can be linearly separable.}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}{Task 3 - Correlation Coefficient}
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../code/Task3/Analysis/corrcoef.jpg} \\
+    \caption{Correlation coefficient for each features.}
+  \end{figure}
+
+  We droped the features with all the correlation coefficient less than a threshold (e.g. 0.1).
+
+\end{frame}
+
+\begin{frame}{Task 3 - Preformance - Logistic Regression}
 
   \begin{table}[H]
     \centering
-    \begin{tabular}{|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c|}
       \hline
-      Model Parameter & Time (Train/Test) & Memory & F1 Score (Train/Test) \\
+      Penalty & \makecell{Dimension                                                 \\ Raising \\ (Degree)} & \makecell{Feature \\ Selection} & F1 Score & Time/Mem \\
+      \hline
+      None    & None                & False & $0.958580$ & $19.5(s)/866(\text{MB})$ \\
+      \hline
+      None    & $2$                 & False & $0.961884$ & $33.5(s)/915(\text{MB})$ \\
+      \hline
+      None    & $3$                 & False & $0.962137$ & $49.6(s)/973(\text{MB})$ \\
+      \hline
+      Lasso   & None                & False & $0.957949$ & $21.5(s)/854(\text{MB})$ \\
+      \hline
+      Ridge   & None                & False & $0.955308$ & $19.8(s)/853(\text{MB})$ \\
+      \hline
+      None    & None                & True  & $0.958186$ & $16.5(s)/825(\text{MB})$ \\
       \hline
     \end{tabular}
-    \caption{Model Performance.}
+    \caption{Preformance for logistic regression. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
   \end{table}
 
 \end{frame}
 
-\section{Task-2}
+\begin{frame}{Task 3 - Preformance - MLP}
 
-\subsection{Problem definition}
-
-\begin{frame}{Task-2 - Problem definition}
-
-  \begin{itemize}
-    \item Dataset: some features with labels;
-    \item Goal: predict the labels.
-  \end{itemize}
-
-\end{frame}
-
-\subsection{Prepare}
-
-\begin{frame}{Task-2 - Prepare}
-
-\end{frame}
-
-\subsection{Analyze}
-
-\begin{frame}{Task-2 - Analyze}
-
-\end{frame}
-
-\subsection{Performance}
-
-\begin{frame}{Task-2 - Performance}
+  \begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+      \hline
+      Dropout & Hidden Size & \makecell{Feature                                         \\ Selection} & F1 Score & Time/Mem \\
+      \hline
+      $0.1$   & $32$        & False             & $0.952208$ & $31.9(s)/929(\text{MB})$ \\
+      \hline
+      $0.2$   & $32$        & False             & $0.900007$ & $31.1(s)/916(\text{MB})$ \\
+      \hline
+      $0.1$   & $32$        & True              & $0.948050$ & $31.3(s)/899(\text{MB})$ \\
+      \hline
+      $0.1$   & $16$        & False             & $0.950315$ & $31.7(s)/929(\text{MB})$ \\
+      \hline
+      $0.1$   & $64$        & True              & $0.950000$ & $29.7(s)/902(\text{MB})$ \\
+      \hline
+    \end{tabular}
+    \caption{Preformance for MLP. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \end{table}
 
 \end{frame}
 
-\section{Task-3}
 
-\subsection{Problem definition}
+\section{Summary}
 
-\begin{frame}{Task-3 - Problem definition}
-  \begin{itemize}
-    \item Dataset: credit card transactions with fraud indicator;
-    \item Goal: classify whether this transaction is fraudulent or not.
-  \end{itemize}
-\end{frame}
-
-\subsection{Prepare}
-
-\begin{frame}{Task-3 - Prepare - Distribution}
-
-  % \begin{figure}[H]
-  %   \centering
-  %   \includegraphics[width=0.8\textwidth]{} \\
-  %   \includegraphics[width=0.8\textwidth]{}
-  %   \caption{Data distribution.}
-  % \end{figure}
-
-\end{frame}
-
-\begin{frame}{Task-3 - Prepare}
-
-\end{frame}
-
-\subsection{Analyze}
-
-\begin{frame}{Task-3 - Analyze}
-
-\end{frame}
-
-\subsection{Performance}
-
-\begin{frame}{Task-3 - Performance}
+\begin{frame}{Summary}
 
 \end{frame}
 
