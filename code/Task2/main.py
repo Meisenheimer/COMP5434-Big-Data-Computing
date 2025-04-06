@@ -12,7 +12,7 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.impute import KNNImputer
 
-from model import MultiLogistic, DecisionTree
+from model import MultiLogistic, DecisionTree, MultilayerPerceptron
 
 
 os.makedirs("./Result/", exist_ok=True)
@@ -70,6 +70,8 @@ def getModel(args: argparse.Namespace) -> object:
         return MultiLogistic(args)
     elif (args.model.lower() == "decisiontree"):
         return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
+    elif (args.model.lower() == "mlp"):
+        return MultilayerPerceptron(args)
     else:
         raise
 
@@ -156,7 +158,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str, default="./poly-u-comp-5434-20242-project-task-2/")
 
     parser.add_argument("--n_estimator", type=int, default=10)
-
     parser.add_argument("--max_depth", type=int, default=20)
     parser.add_argument("--min_samples_split", type=int, default=2)
     parser.add_argument("--min_samples_leaf", type=int, default=1)
@@ -167,28 +168,38 @@ if __name__ == "__main__":
     parser.add_argument("--alpha_1", type=float, default=0.0)
     parser.add_argument("--alpha_2", type=float, default=0.0)
     parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--lr", type=float, default=0.5)
+    parser.add_argument("--lr", type=float, default=0.01)
+    # parser.add_argument("--lr", type=float, default=0.01)
     parser.add_argument("--gamma", type=float, default=1.125)
     parser.add_argument("--tol", type=float, default=0.0005)
+
+    # MLP
+    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--hidden_size", type=int, default=128)
+    parser.add_argument("--dropout", type=float, default=0.3)
+    parser.add_argument("--num_classes", type=int, default=5)
+    parser.add_argument("--mlp_epoch", type=int, default=100)
 
     parser.add_argument("--feat_selection", type=bool, default=False)
     parser.add_argument("--degree", type=int, default=1)
 
     parser.add_argument("--mode", type=str, default="All")
-    parser.add_argument("--model", type=str, required=True)
+    # parser.add_argument("--model", type=str, default="decisiontree")
+    parser.add_argument("--model", type=str, default="mlp")
 
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--epoch", type=int, default=5)
+    parser.add_argument("--epoch", type=int, default=1)
     parser.add_argument("--test_size", type=float, default=0.2)
 
     parser.add_argument("--device", type=str, default="cuda")
+    # parser.add_argument("--device", type=str, default="cpu")
 
     args = parser.parse_args()
     args.time = time.localtime()
 
     args.output_dir = f"./Result/{args.mode}_{args.model}_{args.time.tm_mon:02d}{args.time.tm_mday:02d}-{args.time.tm_hour:02d}{args.time.tm_min:02d}{args.time.tm_sec:02d}/"
 
-    if (not torch.cuda.is_available() and args.device != "cpu"):
+    if (not torch.cuda.is_available() or args.device == "cpu"):
         print("No CUDA, using CPU.")
         args.device = "cpu"
     else:

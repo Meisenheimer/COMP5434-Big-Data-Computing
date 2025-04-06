@@ -1,7 +1,11 @@
+import math
 import random
 import torch
-import numpy as np
+from torch import nn
 from tqdm import tqdm
+from torch import optim
+
+from sklearn.metrics import f1_score
 
 DTYPE_FLT = torch.float32
 DTYPE_INT = torch.int8
@@ -202,3 +206,78 @@ class DecisionTree():
             return self._traverse_tree(x, node["left"])
         else:
             return self._traverse_tree(x, node["right"])
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size, dropout):
+        super(MLP, self).__init__()
+        self.model = nn.Sequential(
+            # nn.Dropout(dropout),
+            nn.Linear(input_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
+            nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, hidden_size//2),
+            nn.BatchNorm1d(hidden_size//2),
+            nn.LeakyReLU(negative_slope=0.01),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size//2, output_size),
+            # nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class MultilayerPerceptron():
+    def __init__(self, args):
+        self.lr = args.lr
+        self.device = args.device
+        self.threshold = args.threshold
+        self.batch_size = args.batch_size
+        self.hidden_size = args.hidden_size
+        self.dropout = args.dropout
+        self.mlp_epoch = args.mlp_epoch
+        self.num_classes = args.num_classes  # number of different labels
+        self.model = None
+
+    def fit(self, _x, _y):
+        y = _y -1
+        x = torch.tensor(_x, dtype=DTYPE_FLT, device=self.device)
+        y = torch.tensor(y, dtype=torch.long, device=self.device)
+        loss_fn = torch.nn.CrossEntropyLoss()
+        self.model = MLP(_x.shape[1], self.num_classes, self.hidden_size, self.dropout).to(self.device)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
+        for epoch in tqdm(range(self.mlp_epoch)):
+            self.model.train()
+            self.model.requires_grad_()
+            self.model.zero_grad()
+            for index in range(0, x.shape[0], self.batch_size):
+                optimizer.zero_grad()
+                output = self.model(x[index: index + self.batch_size])
+                loss = loss_fn(output, y[index: index + self.batch_size])
+                loss.backward()
+                optimizer.step()
+
+            self.model.eval()
+            #     output = self.model(x)
+            #     preds = torch.argmax(output, dim=1) + 1
+            # print(f"Epoch {epoch}: F1 Score = {f1_score(_y, (preds >= self.threshold).int().cpu(), average='macro')}")
+            with torch.no_grad():
+                output = self.model(x)
+                preds = torch.argmax(output, dim=1) + 1
+                f1 = f1_score(_y, preds.cpu(), average='macro')
+                print(f"Epoch {epoch}: F1 Score = {f1}")
+        self.model.eval()
+
+    def predict(self, _x):
+        x = torch.tensor(_x, dtype=DTYPE_FLT, device=self.device)
+        # y = torch.zeros(_x.shape[0], dtype=DTYPE_FLT, device=self.device)
+        # output = self.model(x).reshape(-1)
+        # output = self.model(x)
+        # preds = torch.argmax(output, dim=1) + 1
+        # return (preds >= self.threshold).int().cpu()
+        with torch.no_grad():
+            output = self.model(x)
+            preds = torch.argmax(output, dim=1) + 1  # 转换回1~5
+        return preds.cpu().numpy()
