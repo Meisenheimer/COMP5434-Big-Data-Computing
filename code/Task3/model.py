@@ -70,115 +70,8 @@ class LogisticModel():
         return (x >= self.threshold).int().cpu()
 
 
-class DecisionTree():
-    def __init__(self, max_depth, min_samples_split, min_samples_leaf, criterion, device, n_threshold):
-        self.max_depth = max_depth
-        self.min_samples_split = min_samples_split
-        self.min_samples_leaf = min_samples_leaf
-        self.criterion = criterion
-        self.device = device
-        self.n_threshold = n_threshold
-        self.tree = None
-
-    def fit(self, x, y):
-        x = torch.tensor(x, device=self.device, dtype=DTYPE_FLT)
-        y = torch.tensor(y, device=self.device, dtype=DTYPE_INT)
-        self.tree = self._build_tree(x, y, depth=0)
-        return self
-
-    def _build_tree(self, x, y, depth):
-        n_samples = x.shape[0]
-        n_classes = len(torch.unique(y))
-
-        if (depth >= self.max_depth or n_samples < self.min_samples_split or n_classes == 1):
-            return self._make_leaf_node(y)
-
-        best_feature, best_threshold = self._find_best_split(x, y)
-        if best_feature is None:
-            return self._make_leaf_node(y)
-
-        mask = x[:, best_feature] <= best_threshold
-
-        if (mask.sum() < self.min_samples_leaf or (~mask).sum() < self.min_samples_leaf):
-            return self._make_leaf_node(y)
-
-        left_subtree = self._build_tree(x[mask], y[mask], depth + 1)
-        right_subtree = self._build_tree(x[~mask], y[~mask], depth + 1)
-
-        return {"feature": best_feature, "threshold": float(best_threshold),
-                "left": left_subtree, "right": right_subtree}
-
-    def _find_best_split(self, x, y):
-        best_gain = -1
-        best_feature, best_threshold = None, None
-        for feature in range(x.shape[1]):
-            thresholds = torch.unique(x[:, feature])
-            if (thresholds.shape[0] >= (self.n_threshold // 2)):
-                thresholds = torch.linspace(x[:, feature].min(), x[:, feature].max(), self.n_threshold, device=self.device, dtype=DTYPE_FLT)
-            else:
-                tmp, _ = torch.sort(thresholds)
-                if (tmp.shape[0] > 1):
-                    thresholds = (tmp[1:] + tmp[:-1]) / 2.0
-            gain = self._calculate_information_gain(x, y.reshape(1, -1), feature, thresholds)
-            tmp = torch.where(gain == gain.max())[0]
-            i = tmp[random.randint(0, tmp.shape[0] - 1)]
-            if (gain[i] > best_gain):
-                best_gain = gain[i]
-                best_feature = feature
-                best_threshold = thresholds[i]
-        return best_feature, best_threshold
-
-    def _calculate_information_gain(self, x, y, feature, thresholds):
-        thresholds = thresholds.reshape(-1, 1)
-        parent_impurity = self._calculate_impurity(y, torch.ones_like(y, dtype=torch.bool, device=self.device))
-        mask = (x[:, feature].reshape(1, x.shape[0]).repeat((thresholds.shape[0], 1)) <= thresholds)
-        n_left = torch.sum(mask, dim=1)
-        n_right = x.shape[0] - n_left
-        gain = torch.ones(thresholds.shape[0], device=self.device, dtype=DTYPE_FLT) * parent_impurity
-        tmp_y = y.repeat((thresholds.shape[0], 1))
-        gain -= (n_left / y.shape[1]) * self._calculate_impurity(tmp_y, mask)
-        gain -= (n_right / y.shape[1]) * self._calculate_impurity(tmp_y, ~mask)
-        gain[n_left == 0] = 0.0
-        gain[n_right == 0] = 0.0
-        return gain
-
-    def _calculate_impurity(self, y, mask):
-        tmp_y = y.clone()
-        tmp_y[~mask] = -1
-        if (self.criterion == "entropy"):
-            r = torch.zeros(y.shape[0], device=self.device, dtype=DTYPE_FLT)
-            s = torch.sum(mask, dim=1)
-            for k in torch.unique(y):
-                probs = torch.sum((tmp_y == k), dim=1) / s
-                r -= probs * torch.log2(probs + 1e-10)
-            return r
-        elif (self.criterion == "gini"):
-            r = torch.ones(y.shape[0], device=self.device, dtype=DTYPE_FLT)
-            s = torch.sum(mask, dim=1)
-            for k in torch.unique(y):
-                probs = torch.sum((tmp_y == k), dim=1) / s
-                r -= probs ** 2
-            return r
-
-    def _make_leaf_node(self, y):
-        counts = torch.bincount(y)
-        return {"class": torch.argmax(counts).item()}
-
-    def predict(self, x):
-        x = torch.tensor(x, device=self.device, dtype=DTYPE_FLT)
-        return torch.tensor([self._traverse_tree(t, self.tree) for t in x]).cpu()
-
-    def _traverse_tree(self, x, node):
-        if "class" in node:
-            return node["class"]
-        if x[node["feature"]] <= node["threshold"]:
-            return self._traverse_tree(x, node["left"])
-        else:
-            return self._traverse_tree(x, node["right"])
-
-
 class MLP(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size, dropout=0.2):
+    def __init__(self, input_size, output_size, hidden_size, dropout):
         super(MLP, self).__init__()
         self.model = nn.Sequential(
             nn.Dropout(dropout),
@@ -201,20 +94,23 @@ class MultilayerPerceptron():
         self.lr = args.lr
         self.device = args.device
         self.threshold = args.threshold
-        self.batch_size = 256
+        self.batch_size = args.batch_size
+        self.hidden_size = args.hidden_size
+        self.dropout = args.dropout
+        self.mlp_epoch = args.mlp_epoch
         self.model = None
 
     def fit(self, _x, _y):
         x = torch.tensor(_x, dtype=DTYPE_FLT, device=self.device)
         y = torch.tensor(_y, dtype=DTYPE_FLT, device=self.device)
         loss_fn = torch.nn.BCELoss()
-        self.model = MLP(_x.shape[1], 1, 4).to(self.device)
+        self.model = MLP(_x.shape[1], 1, self.hidden_size, self.dropout).to(self.device)
         optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
-        for epoch in range(8):
+        for epoch in tqdm(range(self.mlp_epoch)):
             self.model.train()
             self.model.requires_grad_()
             self.model.zero_grad()
-            for index in tqdm(range(0, x.shape[0], self.batch_size)):
+            for index in range(0, x.shape[0], self.batch_size):
                 optimizer.zero_grad()
                 output = self.model(x[index: index + self.batch_size])
                 loss = loss_fn(output.reshape(-1), y[index: index + self.batch_size])
@@ -223,7 +119,7 @@ class MultilayerPerceptron():
 
             self.model.eval()
             output = self.model(x)
-            print(f"Epoch {epoch}: F1 Score = {f1_score(_y, (output >= self.threshold).int().cpu(), average='macro')}")
+        print(f"Epoch {epoch}: F1 Score = {f1_score(_y, (output >= self.threshold).int().cpu(), average='macro')}")
         self.model.eval()
 
     def predict(self, _x):

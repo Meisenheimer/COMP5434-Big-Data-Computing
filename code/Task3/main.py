@@ -11,7 +11,7 @@ from memory_profiler import profile
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from model import LogisticModel, DecisionTree, MultilayerPerceptron
+from model import LogisticModel, MultilayerPerceptron
 
 
 def loadData(filename: str, feat_selection, target: bool) -> tuple:
@@ -58,8 +58,6 @@ def init(args: argparse.ArgumentParser) -> None:
 def getModel(args: argparse.Namespace) -> object:
     if (args.model.lower() == "logistic"):
         return LogisticModel(args.alpha_1, args.alpha_2, args.device, args.threshold, args.lr, args.gamma, args.tol)
-    elif (args.model.lower() == "decisiontree"):
-        return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
     elif (args.model.lower() == "mlp"):
         return MultilayerPerceptron(args)
     else:
@@ -145,19 +143,17 @@ if __name__ == "__main__":
 
     parser.add_argument("--n_estimator", type=int, default=10)
 
-    parser.add_argument("--max_depth", type=int, default=20)
-    parser.add_argument("--min_samples_split", type=int, default=2)
-    parser.add_argument("--min_samples_leaf", type=int, default=1)
-    parser.add_argument("--criterion", type=str, default="gini")
-    parser.add_argument("--n_threshold", type=int, default=128)
-    parser.add_argument("--split_data_size", type=float, default=0.5)
+    parser.add_argument("--batch_size", type=int, default=1024)  # MLP
+    parser.add_argument("--hidden_size", type=int, default=32)  # MLP
+    parser.add_argument("--dropout", type=float, default=0.1)  # MLP
+    parser.add_argument("--mlp_epoch", type=int, default=16)  # MLP
 
-    parser.add_argument("--alpha_1", type=float, default=0.0)
-    parser.add_argument("--alpha_2", type=float, default=0.0)
-    parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--lr", type=float, default=0.5)
-    parser.add_argument("--gamma", type=float, default=1.125)
-    parser.add_argument("--tol", type=float, default=0.0005)
+    parser.add_argument("--alpha_1", type=float, default=0.0)  # Logistic
+    parser.add_argument("--alpha_2", type=float, default=0.0)  # Logistic
+    parser.add_argument("--threshold", type=float, default=0.5)  # Logistic
+    parser.add_argument("--lr", type=float, default=0.1)  # Logistic
+    parser.add_argument("--gamma", type=float, default=1.125)  # Logistic
+    parser.add_argument("--tol", type=float, default=0.0005)  # Logistic
 
     parser.add_argument("--feat_selection", type=bool, default=False)
     parser.add_argument("--degree", type=int, default=1)
