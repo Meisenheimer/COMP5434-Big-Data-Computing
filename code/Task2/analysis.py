@@ -18,9 +18,9 @@ def loadData(filename: str, target: bool = False) -> tuple:
     LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41", "X51", "Y51", "Z51"]
     data = pd.read_csv(filename).replace("?", "nan")
     if (target):
-        return data[LABELS].to_numpy(), data["label"].to_numpy().astype(int), data["id"].to_numpy()
+        return data[LABELS].to_numpy().astype(float), data["label"].to_numpy().astype(int), data["id"].to_numpy()
     else:
-        return data[LABELS].to_numpy(), data["id"].to_numpy()
+        return data[LABELS].to_numpy().astype(float), data["id"].to_numpy()
 
 
 def preprocess(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -30,8 +30,6 @@ def preprocess(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         print(i, np.isnan(x[:, i]).sum())
     x = x[index == 0]
     y = y[index == 0]
-    print(x)
-    print(x.shape)
     x = (x - x.min(axis=0)) / (x.max(axis=0) - x.min(axis=0))
     x *= 2.0
     x -= 1.0
@@ -104,27 +102,25 @@ def main(args: argparse.Namespace) -> None:
     pyplot.close()
 
     # Hist
-    mean = np.mean(x, axis=0)
-    std = np.std(x, axis=0)
-    index = np.zeros((x.shape[0], ))
+    print("Hist")
+    LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41", "X51", "Y51", "Z51"]
     for i in range(x.shape[1]):
-        upper = float(mean[i] + 3 * std[i])
-        lower = float(mean[i] - 3 * std[i])
+        index = np.zeros((x.shape[0], ))
+        lower, upper = np.percentile(x[:, i], (5, 95))
         index += (x[:, i] > upper)
         index += (x[:, i] < lower)
-    x = x[index == 0]
-    y = y[index == 0]
-    print(x.shape)
-    print(y.shape)
-    for i in range(x.shape[1]):
-        data = x[:, i]
+        data = x[index == 0, i]
+        data_y = y[index == 0]
+        y_max = 0
         pyplot.clf()
-        pyplot.figure(figsize=[10, 3])
+        pyplot.figure(figsize=[5, 3])
         pyplot.grid()
-        # pyplot.xlim([-1, 1])
+        pyplot.xlabel(f"{LABELS[i]}")
         for label in range(1, 6):
-            pyplot.hist(data[y == label], color=label_color[label], label=str(label), alpha=0.5, density=True, bins=50)
-            pyplot.vlines(np.percentile(data[y == label], (25, 50, 75)), ymin=0, ymax=0.9, color="r", linestyles="--")
+            h, _, _ = pyplot.hist(data[data_y == label], color=label_color[label], label=str(label), alpha=0.5, density=True, bins=50)
+            y_max = max(y_max, max(h))
+        for label in range(1, 6):
+            pyplot.vlines(np.percentile(data[data_y == label], (25, 50, 75)), ymin=0, ymax=y_max, color=label_color[label], linestyles="--")
         pyplot.legend()
         pyplot.savefig(os.path.join(args.output, f"Hist-{i}.jpg"), dpi=720, bbox_inches="tight")
         pyplot.close()
