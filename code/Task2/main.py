@@ -12,23 +12,18 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.impute import KNNImputer
 
-from model import MultiLogistic, DecisionTree, MultilayerPerceptron
+from model import DecisionTree, MultilayerPerceptron
 
 
 os.makedirs("./Result/", exist_ok=True)
 
 
 def loadData(filename: str, feat_selection, target: bool) -> tuple:
-    LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41"]
+    if (feat_selection):
+        LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41"]
+    else:
+        LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41", "X51", "Y51", "Z51"]
     data = pd.read_csv(filename).replace("?", "nan")
-
-    # for col in ['X31', 'Y31', 'Z31']:
-    #     data[col] = pd.to_numeric(data[col], errors='coerce')
-    #     data[col] = data[col].fillna(data[col].median())
-    # imputer = KNNImputer(n_neighbors=5)
-    # cols = ['X41', 'Y41', 'Z41']
-    # data[cols] = imputer.fit_transform(data[cols])
-    # data.drop(['X51', 'Y51', 'Z51'], axis=1, inplace=True)
 
     if (target):
         return data[LABELS].to_numpy(), data["label"].to_numpy(), data["id"].to_numpy()
@@ -66,9 +61,7 @@ def init(args: argparse.ArgumentParser) -> None:
 
 
 def getModel(args: argparse.Namespace) -> object:
-    if (args.model.lower() == "logistic"):
-        return MultiLogistic(args)
-    elif (args.model.lower() == "decisiontree"):
+    if (args.model.lower() == "decisiontree"):
         return DecisionTree(args.max_depth, args.min_samples_split, args.min_samples_leaf, args.criterion, args.device, args.n_threshold)
     elif (args.model.lower() == "mlp"):
         return MultilayerPerceptron(args)
@@ -165,34 +158,26 @@ if __name__ == "__main__":
     parser.add_argument("--n_threshold", type=int, default=128)
     parser.add_argument("--split_data_size", type=float, default=0.5)
 
-    parser.add_argument("--alpha_1", type=float, default=0.0)
-    parser.add_argument("--alpha_2", type=float, default=0.0)
-    parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--lr", type=float, default=0.01)
-    # parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--gamma", type=float, default=1.125)
-    parser.add_argument("--tol", type=float, default=0.0005)
-
     # MLP
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--hidden_size", type=int, default=128)
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--num_classes", type=int, default=5)
     parser.add_argument("--mlp_epoch", type=int, default=100)
+    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--threshold", type=float, default=0.5)
 
     parser.add_argument("--feat_selection", type=bool, default=False)
     parser.add_argument("--degree", type=int, default=1)
 
     parser.add_argument("--mode", type=str, default="All")
-    # parser.add_argument("--model", type=str, default="decisiontree")
-    parser.add_argument("--model", type=str, default="mlp")
+    parser.add_argument("--model", type=str, required=True)
 
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--epoch", type=int, default=1)
+    parser.add_argument("--epoch", type=int, default=5)
     parser.add_argument("--test_size", type=float, default=0.2)
 
     parser.add_argument("--device", type=str, default="cuda")
-    # parser.add_argument("--device", type=str, default="cpu")
 
     args = parser.parse_args()
     args.time = time.localtime()

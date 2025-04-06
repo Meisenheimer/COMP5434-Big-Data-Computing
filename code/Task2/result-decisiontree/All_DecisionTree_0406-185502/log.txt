@@ -1,0 +1,4 @@
+Namespace(data_dir='./poly-u-comp-5434-20242-project-task-2/', n_estimator=10, max_depth=10, min_samples_split=2, min_samples_leaf=1, criterion='gini', n_threshold=128, split_data_size=0.5, batch_size=32, hidden_size=128, dropout=0.3, num_classes=5, mlp_epoch=100, lr=0.01, threshold=0.5, feat_selection=False, degree=1, mode='All', model='DecisionTree', seed=42, epoch=5, test_size=0.2, device='cpu', time=time.struct_time(tm_year=2025, tm_mon=4, tm_mday=6, tm_hour=18, tm_min=55, tm_sec=2, tm_wday=6, tm_yday=96, tm_isdst=0), output_dir='./Result/All_DecisionTree_0406-185502/', log=<_io.TextIOWrapper name='./Result/All_DecisionTree_0406-185502/log.txt' mode='w' encoding='UTF-8'>)
+Min Score = 0.799004 (0), Mean Score = 0.804327, Max Score = 0.811435 (1), Var Score = 0.000018.
+Train Score = 0.851179.
+Total time = 168.467475(s)

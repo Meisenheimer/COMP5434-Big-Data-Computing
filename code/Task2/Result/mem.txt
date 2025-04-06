@@ -1,378 +1,84 @@
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
+Filename: D:\Workspace\Projects\COMP5434-Big-Data-Computing\code\Task2\main.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-   116    917.7 MiB    917.7 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    917.7 MiB      0.0 MiB           1       print("Loading data.")
-   120    957.3 MiB     39.6 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    962.4 MiB      5.1 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    962.4 MiB      0.0 MiB           1       print("Preprocessing")
-   125    967.0 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    952.0 MiB    -15.0 MiB           1       train_x = imputer.transform(train_x)
-   127    947.0 MiB     -5.0 MiB           1       test_x = imputer.transform(test_x)
-   128    947.0 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    947.0 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    947.0 MiB      0.0 MiB           1       print("Training and testing.")
-   133    947.0 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    947.0 MiB      0.0 MiB           1       model = getModel(args)
-   136    949.5 MiB      2.5 MiB           1       model.fit(train_x, train_y)
-   137    949.5 MiB      0.0 MiB           1       pred_y = model.predict(train_x)
+   109    553.3 MiB    553.3 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
+   110                                         def test(args: argparse.Namespace):
+   111                                             # load the data from csv file.
+   112    553.3 MiB      0.0 MiB           1       print("Loading data.")
+   113    588.7 MiB     35.5 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
+   114    598.1 MiB      9.4 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
+   115                                         
+   116                                             # Preprocessing
+   117    598.1 MiB      0.0 MiB           1       print("Preprocessing")
+   118    603.6 MiB      5.5 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
+   119    578.7 MiB    -25.0 MiB           1       train_x = imputer.transform(train_x)
+   120    571.8 MiB     -6.8 MiB           1       test_x = imputer.transform(test_x)
+   121    571.8 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
+   122    571.8 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
+   123                                         
+   124                                             # Training and testing.
+   125    571.8 MiB      0.0 MiB           1       print("Training and testing.")
+   126    571.8 MiB      0.0 MiB           1       score = 0.0
+   127                                         
+   128    571.8 MiB      0.0 MiB           1       model = getModel(args)
+   129    586.8 MiB     15.0 MiB           1       model.fit(train_x, train_y)
+   130    581.5 MiB     -5.3 MiB           1       pred_y = model.predict(train_x)
+   131                                         
+   132    582.0 MiB      0.5 MiB           1       score = f1_score(train_y, pred_y, average="macro")
+   133                                         
+   134    582.0 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
+   135    582.0 MiB      0.0 MiB           1       print("Train Score = %f." % score)
+   136                                         
+   137    585.8 MiB      3.7 MiB           1       pred_y = model.predict(test_x)
    138                                         
-   139    949.5 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    949.5 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    949.5 MiB      0.0 MiB           1       print("Train Score = %f." % score)
+   139    585.8 MiB      0.0 MiB           1       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
+   140    585.8 MiB      0.0 MiB           1           print("id,label", file=fp)
+   141    585.8 MiB      0.0 MiB       10001           for i in range(len(test_id)):
+   142    585.8 MiB      0.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
    143                                         
-   144    950.7 MiB      1.1 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    950.7 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    950.7 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    950.7 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    950.7 MiB      0.1 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    950.7 MiB      0.0 MiB           1       return None
+   144    585.8 MiB      0.0 MiB           1       return None
 
 
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
+Filename: D:\Workspace\Projects\COMP5434-Big-Data-Computing\code\Task2\main.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-   116    894.2 MiB    894.2 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    894.2 MiB      0.0 MiB           1       print("Loading data.")
-   120    935.0 MiB     40.8 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    939.1 MiB      4.1 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    939.1 MiB      0.0 MiB           1       print("Preprocessing")
-   125    943.7 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    928.7 MiB    -15.0 MiB           1       train_x = imputer.transform(train_x)
-   127    925.7 MiB     -3.0 MiB           1       test_x = imputer.transform(test_x)
-   128    925.7 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    925.7 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    925.7 MiB      0.0 MiB           1       print("Training and testing.")
-   133    925.7 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    925.7 MiB      0.0 MiB           1       model = getModel(args)
-   136    937.7 MiB     12.1 MiB           1       model.fit(train_x, train_y)
-   137    937.7 MiB      0.0 MiB           1       pred_y = model.predict(train_x)
+   109    755.6 MiB    755.6 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
+   110                                         def test(args: argparse.Namespace):
+   111                                             # load the data from csv file.
+   112    755.6 MiB      0.0 MiB           1       print("Loading data.")
+   113    800.2 MiB     44.5 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
+   114    809.7 MiB      9.5 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
+   115                                         
+   116                                             # Preprocessing
+   117    809.7 MiB      0.0 MiB           1       print("Preprocessing")
+   118    815.2 MiB      5.5 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
+   119    787.5 MiB    -27.7 MiB           1       train_x = imputer.transform(train_x)
+   120    779.7 MiB     -7.8 MiB           1       test_x = imputer.transform(test_x)
+   121    779.7 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
+   122    779.7 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
+   123                                         
+   124                                             # Training and testing.
+   125    779.7 MiB      0.0 MiB           1       print("Training and testing.")
+   126    779.7 MiB      0.0 MiB           1       score = 0.0
+   127                                         
+   128    779.7 MiB      0.0 MiB           1       model = getModel(args)
+   129    780.1 MiB      0.4 MiB           1       model.fit(train_x, train_y)
+   130    780.1 MiB      0.0 MiB           1       pred_y = model.predict(train_x)
+   131                                         
+   132    780.1 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
+   133                                         
+   134    780.1 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
+   135    780.1 MiB      0.0 MiB           1       print("Train Score = %f." % score)
+   136                                         
+   137    781.5 MiB      1.4 MiB           1       pred_y = model.predict(test_x)
    138                                         
-   139    937.7 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    937.7 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    937.7 MiB      0.0 MiB           1       print("Train Score = %f." % score)
+   139    781.5 MiB      0.0 MiB           1       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
+   140    781.5 MiB      0.0 MiB           1           print("id,label", file=fp)
+   141    781.5 MiB     -2.1 MiB       10001           for i in range(len(test_id)):
+   142    781.5 MiB     -2.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
    143                                         
-   144    938.9 MiB      1.1 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    938.9 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    938.9 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    938.9 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    938.9 MiB      0.1 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    938.9 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116    879.5 MiB    879.5 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    879.5 MiB      0.0 MiB           1       print("Loading data.")
-   120    920.4 MiB     40.9 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    924.4 MiB      4.0 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    924.4 MiB      0.0 MiB           1       print("Preprocessing")
-   125    928.9 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    915.0 MiB    -14.0 MiB           1       train_x = imputer.transform(train_x)
-   127    912.0 MiB     -3.0 MiB           1       test_x = imputer.transform(test_x)
-   128    912.0 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    912.0 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    912.0 MiB      0.0 MiB           1       print("Training and testing.")
-   133    912.0 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    912.0 MiB      0.0 MiB           1       model = getModel(args)
-   136    923.8 MiB     11.8 MiB           1       model.fit(train_x, train_y)
-   137    923.8 MiB      0.0 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    923.8 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    923.8 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    923.8 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    925.0 MiB      1.2 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    925.0 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    925.0 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    925.0 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    925.0 MiB      0.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    925.0 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116    879.0 MiB    879.0 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    879.0 MiB      0.0 MiB           1       print("Loading data.")
-   120    919.5 MiB     40.4 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    923.6 MiB      4.1 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    923.6 MiB      0.0 MiB           1       print("Preprocessing")
-   125    928.2 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    914.2 MiB    -14.0 MiB           1       train_x = imputer.transform(train_x)
-   127    909.2 MiB     -5.0 MiB           1       test_x = imputer.transform(test_x)
-   128    909.2 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    909.2 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    909.2 MiB      0.0 MiB           1       print("Training and testing.")
-   133    909.2 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    909.2 MiB      0.0 MiB           1       model = getModel(args)
-   136    924.2 MiB     15.0 MiB           1       model.fit(train_x, train_y)
-   137    924.2 MiB      0.0 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    924.2 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    924.2 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    924.2 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    925.4 MiB      1.2 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    925.5 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    925.4 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    925.5 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    925.5 MiB      0.1 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    925.5 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116    876.5 MiB    876.5 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    876.5 MiB      0.0 MiB           1       print("Loading data.")
-   120    918.2 MiB     41.7 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    922.1 MiB      3.9 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    922.1 MiB      0.0 MiB           1       print("Preprocessing")
-   125    926.7 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    910.7 MiB    -16.0 MiB           1       train_x = imputer.transform(train_x)
-   127    905.7 MiB     -5.0 MiB           1       test_x = imputer.transform(test_x)
-   128    905.7 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    905.7 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    905.7 MiB      0.0 MiB           1       print("Training and testing.")
-   133    905.7 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    905.7 MiB      0.0 MiB           1       model = getModel(args)
-   136    914.6 MiB      8.9 MiB           1       model.fit(train_x, train_y)
-   137    919.2 MiB      4.6 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    919.2 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    919.2 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    919.2 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    919.9 MiB      0.8 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    920.0 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    920.0 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    920.0 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    920.0 MiB      0.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    920.0 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116    876.1 MiB    876.1 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    876.1 MiB      0.0 MiB           1       print("Loading data.")
-   120    917.5 MiB     41.4 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    921.4 MiB      3.9 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    921.4 MiB      0.0 MiB           1       print("Preprocessing")
-   125    925.9 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    910.0 MiB    -16.0 MiB           1       train_x = imputer.transform(train_x)
-   127    908.0 MiB     -2.0 MiB           1       test_x = imputer.transform(test_x)
-   128    908.0 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    908.0 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    908.0 MiB      0.0 MiB           1       print("Training and testing.")
-   133    908.0 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    908.0 MiB      0.0 MiB           1       model = getModel(args)
-   136    916.6 MiB      8.6 MiB           1       model.fit(train_x, train_y)
-   137    921.2 MiB      4.6 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    921.2 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    921.2 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    921.2 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    921.9 MiB      0.7 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    922.0 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    921.9 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    922.0 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    922.0 MiB      0.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    922.0 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116     39.0 MiB     39.0 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119     39.0 MiB      0.0 MiB           1       print("Loading data.")
-   120     92.0 MiB     53.0 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121     96.2 MiB      4.2 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124     96.2 MiB      0.0 MiB           1       print("Preprocessing")
-   125    101.7 MiB      5.5 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126     91.0 MiB    -10.7 MiB           1       train_x = imputer.transform(train_x)
-   127     88.4 MiB     -2.6 MiB           1       test_x = imputer.transform(test_x)
-   128     88.4 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129     88.4 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132     88.4 MiB      0.0 MiB           1       print("Training and testing.")
-   133     88.4 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135     88.5 MiB      0.0 MiB           1       model = getModel(args)
-   136    106.6 MiB     18.1 MiB           1       model.fit(train_x, train_y)
-   137    111.2 MiB      4.6 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    111.2 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    111.2 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    111.2 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    112.0 MiB      0.8 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    112.3 MiB      0.1 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    112.1 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    112.3 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    112.3 MiB      0.3 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    112.3 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116     39.5 MiB     39.5 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119     39.5 MiB      0.1 MiB           1       print("Loading data.")
-   120     92.2 MiB     52.6 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121     96.2 MiB      4.0 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124     96.2 MiB      0.0 MiB           1       print("Preprocessing")
-   125    101.8 MiB      5.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126     90.5 MiB    -11.3 MiB           1       train_x = imputer.transform(train_x)
-   127     87.6 MiB     -2.9 MiB           1       test_x = imputer.transform(test_x)
-   128     87.6 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129     87.6 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132     87.6 MiB      0.0 MiB           1       print("Training and testing.")
-   133     87.6 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135     87.6 MiB      0.0 MiB           1       model = getModel(args)
-   136     35.1 MiB    -52.5 MiB           1       model.fit(train_x, train_y)
-   137     44.6 MiB      9.6 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139     44.7 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141     44.7 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142     44.7 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144     47.4 MiB      2.7 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146     48.8 MiB      0.4 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147     47.8 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148     48.7 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149     48.7 MiB      0.9 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151     48.8 MiB      0.0 MiB           1       return None
-
-
-Filename: D:\资料和回忆\校园\大学\学业\研究生\COMP5434 Big Data Computing\Project\Task2\main.py
-
-Line #    Mem usage    Increment  Occurrences   Line Contents
-=============================================================
-   116    893.0 MiB    893.0 MiB           1   @profile(stream=open("./Result/mem.txt", "a", encoding="UTF-8"))
-   117                                         def test(args: argparse.Namespace):
-   118                                             # load the data from csv file.
-   119    893.0 MiB      0.0 MiB           1       print("Loading data.")
-   120    934.5 MiB     41.5 MiB           1       train_x, train_y, _ = loadData(os.path.join(args.data_dir, "train.csv"), args.feat_selection, True)
-   121    938.4 MiB      4.0 MiB           1       test_x, test_id = loadData(os.path.join(args.data_dir, "test.csv"), args.feat_selection, False)
-   122                                         
-   123                                             # Preprocessing
-   124    938.4 MiB      0.0 MiB           1       print("Preprocessing")
-   125    943.0 MiB      4.6 MiB           1       imputer = KNNImputer(n_neighbors=5).fit(train_x)
-   126    928.0 MiB    -15.0 MiB           1       train_x = imputer.transform(train_x)
-   127    925.1 MiB     -3.0 MiB           1       test_x = imputer.transform(test_x)
-   128    925.1 MiB      0.0 MiB           1       train_x, train_y = preprocess(train_x, train_y, args, False)
-   129    925.1 MiB      0.0 MiB           1       test_x = preprocess(test_x, np.zeros_like((test_x.shape[0])), args, True)
-   130                                         
-   131                                             # Training and testing.
-   132    925.1 MiB      0.0 MiB           1       print("Training and testing.")
-   133    925.1 MiB      0.0 MiB           1       score = 0.0
-   134                                         
-   135    925.1 MiB      0.0 MiB           1       model = getModel(args)
-   136    934.9 MiB      9.8 MiB           1       model.fit(train_x, train_y)
-   137    939.5 MiB      4.6 MiB           1       pred_y = model.predict(train_x)
-   138                                         
-   139    939.5 MiB      0.0 MiB           1       score = f1_score(train_y, pred_y, average="macro")
-   140                                         
-   141    939.5 MiB      0.0 MiB           1       print("Train Score = %f." % score, file=args.log)
-   142    939.5 MiB      0.0 MiB           1       print("Train Score = %f." % score)
-   143                                         
-   144    939.5 MiB      0.0 MiB           1       pred_y = model.predict(test_x)
-   145                                         
-   146    939.5 MiB      0.0 MiB           2       with open(os.path.join(args.output_dir, "res.csv"), "w") as fp:
-   147    939.5 MiB      0.0 MiB           1           print("id,label", file=fp)
-   148    939.5 MiB      0.0 MiB       10001           for i in range(len(test_id)):
-   149    939.5 MiB      0.0 MiB       10000               print(f"{test_id[i]},{int(pred_y[i])}", file=fp)
-   150                                         
-   151    939.5 MiB      0.0 MiB           1       return None
+   144    781.5 MiB      0.0 MiB           1       return None
 
 

@@ -1,0 +1,4 @@
+Namespace(data_dir='./poly-u-comp-5434-20242-project-task-2/', n_estimator=10, max_depth=20, min_samples_split=2, min_samples_leaf=1, criterion='gini', n_threshold=128, split_data_size=0.5, batch_size=512, hidden_size=128, dropout=0.3, num_classes=5, mlp_epoch=200, lr=0.01, threshold=0.5, feat_selection=False, degree=1, mode='All', model='MLP', seed=42, epoch=5, test_size=0.2, device='cuda', time=time.struct_time(tm_year=2025, tm_mon=4, tm_mday=6, tm_hour=19, tm_min=5, tm_sec=30, tm_wday=6, tm_yday=96, tm_isdst=0), output_dir='./Result/All_MLP_0406-190530/', log=<_io.TextIOWrapper name='./Result/All_MLP_0406-190530/log.txt' mode='w' encoding='UTF-8'>)
+Min Score = 0.958367 (4), Mean Score = 0.961653, Max Score = 0.963219 (3), Var Score = 0.000003.
+Train Score = 0.971821.
+Total time = 219.423635(s)
