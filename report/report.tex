@@ -93,7 +93,7 @@ SmallCapsFeatures={Numbers=OldStyle}]{NewCMMono10-Regular.otf}
 \vspace{1cm}
 
 \begin{abstract}
-  This report presents our team's solutions of three classification tasks: student placement prediction, feature-based multi-class classification, and fraud detection. We first introduce the problem definition and the dataset as well as give a brief introduction of the methods we use. Then the for each task, following the data analytical process, we design the preparing and analyzing algorithm to handle the problems such as the missing values and feature engineering. We use the techniques like correlation coefficient and $k$ nearest neighbor imputer in exploration and preprocessing, then the logistics regresson, decision tree and multilayer perceptron are implement and apply to the data. In the end, we report the model performance with the discovery based on the results.
+  This report presents our team's solutions of three classification tasks: student placement prediction, feature-based multi-class classification, and fraud detection. We first introduce the problem definition and the dataset as well as give a brief introduction of the methods we use. Then the for each task, following the data analytical process, we design the preparing and analyzing algorithm to handle the problems such as the missing values and feature engineering. We use the techniques like correlation coefficient and $k$ nearest neighbor imputer in exploration and preprocessing, then the logistics regression, decision tree and multilayer perceptron are implement and apply to the data. In the end, we report the model performance with the discovery based on the results.
   \\\\
   \textbf{Keywords:} Classification, Machine learning.
 \end{abstract}
@@ -108,7 +108,7 @@ SmallCapsFeatures={Numbers=OldStyle}]{NewCMMono10-Regular.otf}
 
 \subsection{Task 3}
 
-\section{Data Prepare}
+\section{Data Prepare Method}
 
 \subsection{Correlation coefficient}
 
@@ -116,7 +116,7 @@ The correlation coefficient measures the relationship between two samples, which
 
 \subsubsection{Pearson correlation coefficient}
 
-Given two samples ${x}_{i=1}^n, {y}_{i=1}^n$ with size $n$, the Pearson correlation coefficient measures the correlation via
+Given two samples $\{x\}_{i=1}^n, \{y\}_{i=1}^n$ with size $n$, the Pearson correlation coefficient measures the correlation via
 
 $$
   r (x, y) = \frac{\sum_{i=1}^n (x - \bar{x}) (y - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^n (y_i - \bar{y})^2}},
@@ -130,13 +130,13 @@ The values of the Pearson correlation coefficients are within range $[-1, 1]$ an
 
 The Kendall correlation coefficient and Spearman correlation coefficient are both rank correlation coefficient, which measured the similarity between two rankings, i.e., whether the rank of one sample correspond to the rank of another sample. Based on this idea, these correlation coefficients are more robust to outliers, and effective for monotonic relationships.
 
-Given two samples ${x}_{i=1}^n, {y}_{i=1}^n$ with size $n$ and unique elements, the Kendall correlation coefficient is computed based on the Pearson correlation coefficient between the rank variables as
+Given two samples $\{x\}_{i=1}^n, \{y\}_{i=1}^n$ with size $n$ and unique elements, the Kendall correlation coefficient is computed based on the Pearson correlation coefficient between the rank variables as
 
 $$
   r_k (x, y) = \frac{\#(\text{Concordant pairs}) - \#(\text{Discordant pairs})}{\#(\text{All paires})},
 $$
 
-where $\#(\cdot)$ calculate the number of the elements in the set, and a pair $(i, j), i < j$ is concordant if $x_i < x_j, y_i < y_j$ or $x_i > x_j, y_i > y_j$, otherwise discordant. This method can also be expanded to the non-unique values.
+\noindent where $\#(\cdot)$ calculate the number of the elements in the set, and a pair $(i, j), i < j$ is concordant if $x_i < x_j, y_i < y_j$ or $x_i > x_j, y_i > y_j$, otherwise discordant. This method can also be expanded to the non-unique values.
 
 Given two samples ${x}_{i=1}^n, {y}_{i=1}^n$ with size $n$, the Spearman correlation coefficient is computed based on the Pearson correlation coefficient between the rank variables as
 
@@ -144,7 +144,7 @@ $$
   r_s (x, y) = r(R(x), R(y)),
 $$
 
-where $R(x)$ and $R(y)$ are the rank of the samples.
+\noindent where $R(x)$ and $R(y)$ are the rank of the samples.
 
 \subsection{$k$ nearest neighbors imputer}
 
@@ -154,7 +154,7 @@ This method works with both numerical and categorical data, but can be easily in
 
 \subsection{Dimension raising}
 
-In order to better deal with the nonlinearity, we used the dimension raising in preprocessing, which transform the data to a higher dimensional space. Given the scalar data $x_i$ and a given degree $d$, one simple way is to compute the new data as $(x_i, x_i^2, \dots, x_i^d)$, which will make some patterns or relationships more apparent. Another way is to combine the features. Given scalar $x_i$ and $y_i$, the new data is computed as $(x_i, y_i, x_i y_i)$. In this approach, we can manually constructe new features based on the real world infomation, which can better balance the data size and model performance.
+In order to better deal with the nonlinearity, we used the dimension raising in preprocessing, which transform the data to a higher dimensional space. Given the scalar data $x_i$ and a given degree $d$, one simple way is to compute the new data as $(x_i, x_i^2, \dots, x_i^d)$, which will make some patterns or relationships more apparent. Another way is to combine the features. For example, given scalar $x_i$ and $y_i$, the new data is computed as $(x_i, y_i, x_i y_i)$. In this approach, we can manually constructe more meanful and complex features, which can better balance the data size and model performance.
 
 The Figure \ref{sample-raising} shows the example for dimension raising. In the origin data (the left figure), the red part is between the two blue part, whcih can make difficulty in classification, especially for linear or weakly nonlinear classifier, while the data after dimension raising can be easily separated.
 
@@ -162,41 +162,223 @@ The Figure \ref{sample-raising} shows the example for dimension raising. In the 
   \centering
   \includegraphics[width=0.4\textwidth]{./figure/Sample-Raising-1.jpg}
   \includegraphics[width=0.4\textwidth]{./figure/Sample-Raising-2.jpg}
-  \caption{Example for dimension raising. The left shows that origin data, where the data is not linearly separable, while the right shows the data after dimension raising, where the $y_2$ is easy to be separated by a line.}
+  \caption{Example for dimension raising. The left shows that the origin data is not linearly separable, while the right shows the data after dimension raising, where the $y_2$ is easy to be separated by a line.}
   \label{sample-raising}
 \end{figure}
 
-\section{Data Analysis}
+\section{Data Analysis Method \& Implementation}
 
 \subsection{Logistic regression}
 
-The logistic regression is a widely used linear classification model. By linearly combine the input features, the logistic regression gives a probability value ranging between $0$ and $1$ as output. Due to the linearty, this model will be less prone to overfitting, but on the other hand, it can't catch the nonlinearity.
+The logistic regression is a widely used classification model with less prone to overfitting due to its linearty. By linearly combine the input features, the logistic regression gives a probability value ranging between $0$ and $1$ as output via
+
+$$
+  p (\mathbf{x}) = \frac{1}{1 + \exp{- \mathbf{x}^T \beta_1 - \beta_0}},
+$$
+
+\noindent with the objective function defined as the log-likelihood
+
+$$
+  l = \sum_{y_k = 1} \ln(p (\mathbf{x}_i)) + \sum_{y_k = 0} \ln(1 - p (\mathbf{x}_i)),
+$$
+
+\noindent where $\mathbf{x}_i$ are sample and the $y_i$ are corresponding label.
+
+Then, the a gradient descent method is used for getting the optimal parameters with the gradient of the above log-likelihood
+
+$$
+  \begin{aligned}
+    \frac{\partial l}{\partial \beta_0} = & \sum_{i=0}^n (y_k - p (\mathbf{x_k})),              \\
+    \frac{\partial l}{\partial \beta_1} = & \sum_{i=0}^n (y_k - p (\mathbf{x_k})) \mathbf{x_k}, \\
+  \end{aligned}
+$$
+
+\noindent where $n$ is the number of samples.
+
+Further more, we used a learning rate adjusting strategy similar to Adagrad, combining with the learning rate schedule to accelerate the convergence. Specifically, the learning rate in $k$-th interaction is given by
+
+$$
+  \eta_k = \frac{\eta_0 \gamma^{\lfloor \frac{k}{m} \rfloor}}{\max(1.0, \Vert \nabla l \Vert + \epsilon)},
+$$
+
+\noindent where $\eta_0$ is the initial learning rate, $m$ is the interval of learning rate schedule and $\epsilon$ is a small value to avoid the division by zero.
+
+We implement the above method with the Lasso and Ridge penalty by PyTorch, most of the hyperparameters are given by the user via the command, while the interval of learning rate schedule is fix to $2048$ iterations. The norm we used for adapting and terminating condition is the $l-\infty$ norm, which can also be written as $\max_{i} \vert d_i \vert$, where $d_i$ is the $i$-th entry of the gradient. Different from $l_1$ norm and $l_2$ norm, the $l-\infty$ norm doesn't involve the dimension, thus it will be more suitable for different problems due to the consistency.
 
 \subsection{Decision tree}
 
-The decision tree is a supervised learning method used for classification. Based on the simple decision rules inferred from the data features, it will create a model that predict the label with piecewise constant approximation.
+The decision tree is a supervised learning method used for classification. Based on the simple decision rules inferred from the data features, it will create a model that predict the label with piecewise constant approximation. More specifically, given the samples $s = \{(x_i, y_i)\}_{i=1}^n$ the Gini index and the Entropy is computed as
 
-One of the main property of decision trees is that it don't require data preparation like normalization or standardization of data, further more, it can handle both categorical and numerical data and multi-output problems, which means that some preprocessing, such as one hot encoding, is not necessary.
+$$
+  \begin{aligned}
+    \text{Gini} (x, y) =    & 1 - \sum_{k=1}^m p_k^2,          \\
+    \text{Entropy} (x, y) = & - \sum_{k=1}^m p_k \log_2 (p_k), \\
+  \end{aligned}
+$$
+
+\noindent where $m$ is the number of classes, and $p_k$ is the proportion of class $k$. Then a threshold $t$ will be found to split the smaples into $s_1 = \{(x_i, y_i): (x_i, y_i) \in s, x_i <= t \}$ and $s_2 = \{(x_i, y_i): (x_i, y_i) \in s, x_i > t \}$ such that the information gain, i.e., the Gini index or the Entropy of $s$ minus the sum of the Gini index or the Entropy of the $s_1$ and $s_2$, will reach the maximum.
+
+We implement the decision tree by PyTorch, with the maximal depth, minimal number of samples to split, minimal number of samples in leaf selected by user, which are the terminating conditions in creating the tree. In optimizing the threshold of splitting, the grid search method is used for accelerating, i.e., given the samples $\{x_i\}_{i=1}^n$ and the number of grid point $m + 1$, we first generate the grid point as
+
+$$
+  p_i = \min(x_i) + \frac{\max(x_i) - \min(x_i)}{m} i, i \in \{0, \dots, m\},
+$$
+
+\noindent where $p_0 = \min(x_i)$ and $p_{m} = \max(x_i)$ and the grid is uniform. Noticed that this approach is used only when the number of unique values in $x$ is larger than a given threshold, otherwise, we simply use the unique values in $x$ as well as the mid point of two adjacent smaples as the grid.
+
+After compute the grid, we can calculate the information gain for all splitting point in one turn with the support of PyTorch tensor, which can speed up the generation by hundreds of times.
 
 \subsection{Multilayer perceptron}
 
 The multilayer perceptron (MLP) is a basic kind of neural network which learns a function $f: \mathbb{R}^n \mapsto \mathbb{R}^m$ to approximate the input and output. Differnet from the logistic regression, the MLP includes some hidden layer with the nonlinear active function, which can help handle nonlineariy of the data, as well as the hierarchical feature extraction, i.e., it can capturing increasingly complex patterns level by level.
 
-\section{Implementation}
+We implement the MLP by PyTorch with Adam optimizer, which can help train the network efficiently. The hyperparameters including size of each batch, size of hidden layer, dropout rate and number of total epoch are given by users, and during our test a large batch size is used to accelerate the training. We used LeakyReLU as activate function, as well as batch normalization and dropout for better performance and avoiding the overfitting.
 
-\subsection{Logistic regression}
-
-\subsection{Decision tree}
-
-\subsection{Multilayer perceptron}
-
-\section{Solution}
+\section{Solution \& Preformance}
 
 \subsection{Task 1}
 
 \subsection{Task 2}
 
 \subsection{Task 3}
+
+The Figure \ref{task-3-overview-flowchart} shows the workflow of task 3. During the preparing, we first visualize the data, and analyze the distribution for each features and the whole data. Then the correlation coefficients between label and each features are computed, which give the evidence for feature selection. And next, for each selected features, the dimension raising is applied to help handle the nonlinearity of data. After the preparing, the logistic regression and MLP is implement and applied to the data, with different hyperparameters to show the effect of them. In the end, the macro f1 score is used to evaluate the model. In the meanwhile, the time and memory cost is also recorded for analysis.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[minimum width=1.75cm, minimum height=1.25cm, font=\scriptsize]
+    \node[draw, align=center, rounded corners]  (P)   at ( 0,  0.0)    {Prepare};
+    \node[draw, align=center, rounded corners]  (D)   at (-1,  1.5)    {Distribution \\ Analysis};
+    \node[draw, align=center, rounded corners]  (C)   at ( 1,  1.5)    {Correlation \\ Coefficient};
+    \node[draw, align=center, rounded corners]  (F)   at (-1, -1.5)    {Feature \\ Selection};
+    \node[draw, align=center, rounded corners]  (R)   at ( 1, -1.5)    {Dimension \\ Raising};
+
+    \node[draw, align=center, rounded corners]  (M)   at ( 4,  0.0)    {Analyze};
+    \node[draw, align=center, rounded corners]  (LR)  at ( 4,  1.5)    {Logistic \\ Regression};
+    \node[draw, align=center, rounded corners]  (MLP) at ( 4, -1.5)    {MLP};
+
+    \node[draw, align=center, rounded corners]  (E)   at ( 7,  0.0)    {Evaluation \\ (Macro F1 Score)};
+
+    \draw[->] (P) -- (M);
+
+    \draw[-]  (P) -- (D);
+    \draw[-]  (P) -- (C);
+    \draw[-]  (P) -- (F);
+    \draw[-]  (P) -- (R);
+
+    \draw[-]  (M) -- (LR);
+    \draw[-]  (M) -- (MLP);
+
+    \draw[->] (M) -- (E);
+  \end{tikzpicture}
+  \caption{Overview Flowchart.}
+  \label{task-3-overview-flowchart}
+\end{figure}
+
+The Figure \ref{task-3-data-distribution} is the parallel coordinate plot for each features, where the $10\%$ of total data is chosen since there are more than $200000$ sampels. The Figure \ref{task-3-data-distribution-feature} shows the distribution of each feature, where the top and bottom $5\%$ points are considered as outliers, which are not shown in the figure, but still used in training model. And the vertical lines shows the position of first, second and third quartiles. And the Figure \ref{task-3-correlation-coefficient} shows the correlation coefficient between the label and each features.
+
+From These three figures, we can easly see that some features (e.g. V4, V11, V12 and V14) are linear separatable with the absolute value of every correlation coefficients more than $0.6$, implies that these features are highly highly relevant to the label, and can be directly used in the predicting model. In the meanwhile, some features (e.g. V15, V22 and Amount) are totally in mess, and the absolute value of correlation coefficients are all less then $0.1$, which needed to be deleted in feature selection. As for the rest, the correlation coefficients mostly between $0.2$ and $0.6$ can lead to a weak relationships, and we assume that there might be some potential nonlinear relationship that can be handeled via dimension raising and nonlinear classifiers.
+
+In our implementation, we set the $0.1$ as the threshold and only the features with correlation coefficients great than $0.1$ or less than $-0.1$ will be selected. And the degree of dimension raising is not higher than $3$ due to the high degree polynomial features might cause numerical instability or be correlated, which can making optimization more difficult.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../code/Task3/Analysis/PC.jpg}
+  \caption{The parallel coordinate plot for each features (we chose $10\%$ of total data).}
+  \label{task-3-data-distribution}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V1.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V2.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V3.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V4.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V5.jpg} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V6.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V7.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V8.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V9.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V10.jpg} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V11.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V12.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V13.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V14.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V15.jpg} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V16.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V17.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V18.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V19.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V20.jpg} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V21.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V22.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V23.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V24.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V25.jpg} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V26.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V27.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-V28.jpg}
+  \includegraphics[width=0.18\textwidth]{../code/Task3/Analysis/Hist-Amount.jpg}
+  \caption{The distribution for each feature (the top and bottom $5\%$ points are considered as outliers, and are not shown). The vertical lines shows the position of first, second and third quartiles.}
+  \label{task-3-data-distribution-feature}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../code/Task3/Analysis/corrcoef.jpg} \\
+  \caption{Correlation coefficient for each features.}
+  \label{task-3-correlation-coefficient}
+\end{figure}
+
+The Table \ref{task-3-result-1} and Table \ref{task-3-result-2} shows the results of logistic regression and MLP with different hyperparameters. Each test includes $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. And the macro f1 score, time and memory cost are recorded.
+
+The result shows that the logistic regression can reach the f1 score more than $0.95$. Comparing the f1 score given by different raising degree, the results become better as the degree increases, which implies that there exists some potential nonlinearity in the data, but not that significant. On the other hand, the time and memory cost will increase rapidly, which shows that this operator is seem not worth to be done. As for the penalty and feature selection, they will not significantly change the result, which might because that the logistic regression is not prone to overfitting since it is linear and will focus more on the linear separable features.
+
+The MLP model can also reach the f1 score up to $0.95$, and since it highly nonlinear with the ability for capturing increasingly complex patterns hierarchically, there is no need to do the dimension raising. And the feature selection will cause the decreasing of the f1 score also supports this conclusion. On the other hand, The result shows that it will be more sensitive to the hyperparameters, for example, the f1 score will suddenly decreases when the dropout rate changes from $0.1$ to $0.2$.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    Penalty & \makecell{Dimension                                 \\ Raising \\ (Degree)} & \makecell{Feature \\ Selection} & F1 Score & \makecell{Time/Mem \\ (s/MB)} \\
+    \hline
+    None    & None                & False & $0.9586$ & $19.5/866$ \\
+    \hline
+    None    & $2$                 & False & $0.9619$ & $33.5/915$ \\
+    \hline
+    None    & $3$                 & False & $0.9621$ & $49.6/973$ \\
+    \hline
+    Lasso   & None                & False & $0.9579$ & $21.5/854$ \\
+    \hline
+    Ridge   & None                & False & $0.9553$ & $19.8/853$ \\
+    \hline
+    None    & None                & True  & $0.9582$ & $16.5/825$ \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for logistic regression. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \label{task-3-result-1}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    Dropout & Hidden Size & \makecell{Feature                         \\ Selection} & F1 Score & \makecell{Time/Mem \\ (s/MB)} \\
+    \hline
+    $0.1$   & $32$        & False             & $0.9522$ & $31.9/929$ \\
+    \hline
+    $0.2$   & $32$        & False             & $0.9000$ & $31.1/916$ \\
+    \hline
+    $0.1$   & $32$        & True              & $0.9481$ & $31.3/899$ \\
+    \hline
+    $0.1$   & $16$        & False             & $0.9503$ & $31.7/929$ \\
+    \hline
+    $0.1$   & $64$        & True              & $0.9500$ & $29.7/902$ \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for MLP. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \label{task-3-result-2}
+\end{table}
 
 \section{Summary}
 

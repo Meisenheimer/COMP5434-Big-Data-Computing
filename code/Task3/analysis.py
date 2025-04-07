@@ -73,17 +73,18 @@ def main(args: argparse.Namespace) -> None:
     ]
     LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount", "label"]
     df = pd.read_csv(args.datafile)[LABELS]
-    pyplot.figure(figsize=(18, 6))
+    pyplot.figure(figsize=(12, 6))
     for i, (method, title) in enumerate(methods, 1):
         pyplot.subplot(1, 3, i)
         corr = df.corr(method=method, numeric_only=True)
-        sns.heatmap(corr[['label']].sort_values(by='label', ascending=False), annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+        sns.heatmap(corr[['label']].sort_values(by='label', ascending=False), annot=True, cmap='coolwarm', vmin=-1, vmax=1, cbar=False)
         pyplot.title(title)
-    pyplot.tight_layout()
+    # pyplot.tight_layout()
     pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), bbox_inches='tight')
 
     # Parallel Coordinates
     print("Parallel Coordinates.")
+    LABELS = ["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27", "V28", "Amount"]
     mean = np.mean(x, axis=0)
     std = np.std(x, axis=0)
     index = range(x.shape[0])
@@ -91,6 +92,7 @@ def main(args: argparse.Namespace) -> None:
     pyplot.clf()
     pyplot.figure(figsize=[10, 2])
     pyplot.vlines(range(x.shape[1]), ymin=-1.0, ymax=1.0, color="g", linestyles="--", linewidth=0.5)
+    pyplot.xticks(range(x.shape[1]), LABELS, rotation=30)
     pyplot.yticks([])
     pyplot.xlabel("Feature")
     for i in index:
@@ -121,7 +123,7 @@ def main(args: argparse.Namespace) -> None:
         pyplot.vlines(np.percentile(data[data_y == 0], (25, 50, 75)), ymin=0, ymax=y_max, color="r", linestyles="--")
         pyplot.vlines(np.percentile(data[data_y == 1], (25, 50, 75)), ymin=0, ymax=y_max, color="b", linestyles="--")
         pyplot.legend()
-        pyplot.savefig(os.path.join(args.output, f"Hist-{i}.jpg"), dpi=720, bbox_inches="tight")
+        pyplot.savefig(os.path.join(args.output, f"Hist-{LABELS[i]}.jpg"), dpi=720, bbox_inches="tight")
         pyplot.close()
     return None
 
