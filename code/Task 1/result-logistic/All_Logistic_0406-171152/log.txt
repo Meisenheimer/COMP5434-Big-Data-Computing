@@ -1,5 +1,0 @@
-Namespace(data_dir='poly-u-comp-5434-20242-project-task-1', max_depth=12, min_samples_split=2, min_samples_leaf=1, n_threshold=64, split_data_size=1, criterion='gini', alpha_1=0.0, alpha_2=0.0, threshold=0.5, lr=0.5, gamma=1.125, tol=0.0005, degree=1, mode='All', model='Logistic', seed=42, epoch=5, test_size=0.2, device='cuda', time=time.struct_time(tm_year=2025, tm_mon=4, tm_mday=6, tm_hour=17, tm_min=11, tm_sec=52, tm_wday=6, tm_yday=96, tm_isdst=0), output_dir='result/All_Logistic_0406-171152/', log=<_io.TextIOWrapper name='result/All_Logistic_0406-171152/log.txt' mode='w' encoding='UTF-8'>)
-Min Score = 0.774824 (0), Mean Score = 0.790903, Max Score = 0.806447 (1), Var Score = 0.000108.
-Train Score = 0.793269.
-
-Total time = 1.549962(s)

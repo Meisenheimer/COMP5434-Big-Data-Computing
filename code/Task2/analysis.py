@@ -61,45 +61,29 @@ def main(args: argparse.Namespace) -> None:
     # Correlation
     print("Correlation")
     methods = [
-        ('pearson', 'Pearson Correlation Coeffiecient'),
-        ('spearman', 'Spearman Correlation Coeffiecient'),
-        ('kendall', 'Kendall Correlation Coeffiecient')
+        ('pearson', 'Pearson'),
+        ('spearman', 'Spearman'),
+        ('kendall', 'Kendall')
     ]
 
     LABELS = ["X01", "Y01", "Z01", "X11", "Y11", "Z11", "X21", "Y21", "Z21", "X31", "Y31", "Z31", "X41", "Y41", "Z41", "X51", "Y51", "Z51", "label"]
     df = pd.read_csv(args.datafile).replace("?", "nan").astype(float)[LABELS]
     df = df.dropna(axis=0, how='any')
-    print(df)
-    pyplot.figure(figsize=(18, 6))
-    for i, (method, title) in enumerate(methods, 1):
-        pyplot.subplot(1, 3, i)
-        corr = df.corr(method=method, numeric_only=True)
-        sns.heatmap(corr[['label']].sort_values(by='label', ascending=False), annot=True, cmap='coolwarm', vmin=-1, vmax=1)
-        pyplot.title(title)
-    pyplot.tight_layout()
-    pyplot.savefig(os.path.join(args.output, f"corrcoef.jpg"), bbox_inches='tight')
-
-    # Parallel Coordinates
-    print("Parallel Coordinates.")
-    mean = np.mean(x, axis=0)
-    std = np.std(x, axis=0)
-    index = range(x.shape[0])
-    index = random.sample(list(range(x.shape[0])), x.shape[0] // 10)
-    pyplot.clf()
-    pyplot.figure(figsize=[10, 2])
-    pyplot.vlines(range(x.shape[1]), ymin=-1.0, ymax=1.0, color="g", linestyles="--", linewidth=0.5)
-    pyplot.yticks([])
-    pyplot.xlabel("Feature")
-    tick = np.arange(0, x.shape[1], 1)
-    for i in index:
-        for label in range(1, 6):
-            pyplot.plot(tick, x[i, :], color=label_color[y[i]], alpha=0.25, linewidth=0.5)
-    for i in range(x.shape[1]):
-        upper = min(float(mean[i] + 3 * std[i]), 1)
-        lower = max(float(mean[i] - 3 * std[i]), -1)
-        pyplot.hlines(y=(lower, mean[i], upper), xmin=i - 0.5, xmax=i + 0.5, color="g", linestyles="--", linewidth=0.5)
-    pyplot.savefig(os.path.join(args.output, f"PC.jpg"), dpi=720, bbox_inches="tight")
-    pyplot.close()
+    for label in range(1, 6):
+        tag = f"label-{label}"
+        tmp_df = df.copy()
+        tmp_df[tag] = tmp_df["label"]
+        tmp_df[tag][tmp_df[tag] != label] = 0
+        tmp_df[tag][tmp_df[tag] == label] = 1
+        tmp_df.drop(columns="label", inplace=True)
+        pyplot.figure(figsize=(10, 6))
+        for i, (method, title) in enumerate(methods, 1):
+            pyplot.subplot(1, 3, i)
+            corr = tmp_df.corr(method=method, numeric_only=True)
+            sns.heatmap(corr[[tag]].sort_values(by=tag, ascending=False), annot=True, cmap='coolwarm', vmin=-1, vmax=1, cbar=False)
+            pyplot.title(title)
+        # pyplot.tight_layout()
+        pyplot.savefig(os.path.join(args.output, f"corrcoef-{label}.jpg"), bbox_inches='tight')
 
     # Hist
     print("Hist")
@@ -122,7 +106,7 @@ def main(args: argparse.Namespace) -> None:
         for label in range(1, 6):
             pyplot.vlines(np.percentile(data[data_y == label], (25, 50, 75)), ymin=0, ymax=y_max, color=label_color[label], linestyles="--")
         pyplot.legend()
-        pyplot.savefig(os.path.join(args.output, f"Hist-{i}.jpg"), dpi=720, bbox_inches="tight")
+        pyplot.savefig(os.path.join(args.output, f"Hist-{LABELS[i]}.jpg"), dpi=720, bbox_inches="tight")
         pyplot.close()
     return None
 

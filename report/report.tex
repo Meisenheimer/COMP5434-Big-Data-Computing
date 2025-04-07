@@ -238,11 +238,253 @@ We implement the MLP by PyTorch with Adam optimizer, which can help train the ne
 
 \subsection{Task 1}
 
+The Figure \ref{task-1-overview-flowchart} shows the workflow of task 1. During the preparing, we used the dimension raising based on the data distribution as well as the meaning of each features. Also, the correlation coefficients between label and each features are computed as other evidence for feature engineering. After the preparing, the logistic regression and decision tree are implemented and applied to the data, with different hyperparameters to show the effect of them. In the end, the macro f1 score is used to evaluate the model. In the meanwhile, the time and memory cost is also recorded for analysis.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[minimum width=1.75cm, minimum height=1.25cm, font=\scriptsize]
+    \node[draw, align=center, rounded corners]  (P)   at ( 0,  0.0)    {Prepare};
+    \node[draw, align=center, rounded corners]  (D)   at (-1,  1.5)    {Distribution \\ Analysis};
+    \node[draw, align=center, rounded corners]  (C)   at ( 1,  1.5)    {Correlation \\ Coefficient};
+    \node[draw, align=center, rounded corners]  (F)   at (-1, -1.5)    {Feature \\ Selection};
+    \node[draw, align=center, rounded corners]  (R)   at ( 1, -1.5)    {Dimension \\ Raising};
+
+    \node[draw, align=center, rounded corners]  (M)   at ( 4,  0.0)    {Analyze};
+    \node[draw, align=center, rounded corners]  (LR)  at ( 4,  1.5)    {Logistic \\ Regression};
+    \node[draw, align=center, rounded corners]  (DT)  at ( 4, -1.5)    {Decision \\ Tree};
+
+    \node[draw, align=center, rounded corners]  (E)   at ( 7,  0.0)    {Evaluation \\ (Macro F1 Score)};
+
+    \draw[->] (P) -- (M);
+
+    \draw[-]  (P) -- (D);
+    \draw[-]  (P) -- (C);
+    \draw[-]  (P) -- (F);
+    \draw[-]  (P) -- (R);
+
+    \draw[-]  (M) -- (LR);
+    \draw[-]  (M) -- (DT);
+
+    \draw[->] (M) -- (E);
+  \end{tikzpicture}
+  \caption{Overview flowchart for task 1.}
+  \label{task-1-overview-flowchart}
+\end{figure}
+
+The Figure \ref{task-1-data-distribution} is the parallel coordinate plot of the data. And the Figure \ref{task-1-correlation-coefficient} shows the correlation coefficient between the label and each features.
+
+From These figures, we can easly see that some features (e.g. AptitudeTestScore and HSC\_Marks) are linear separatable with the absolute value of every correlation coefficients more than $0.4$, implies that these features are highly highly relevant to the label, and can be directly used in the predicting model. In addition, all the correlation coefficients are all higher then $0.2$, which implies the linear model can get a good preformance on this dataset.
+
+Another property of the data is that there is no anonymity features and all features has its meaning. Therefore we can manually create the new features based on their meanings. For example, the Internships, Projects and Workshops/Certifications are all practical experiences, thus we create a new features from them, which shows that whether the student have ever participate in a practice; the AptitudeTestScore and SoftSkillsRating are all about the potential ability, which can also be combined; there is chronological relationship betwenn SSC\_Marks and HSC\_Marks, thus its difference can be used to measure the effort of student in this period; and so on so forth for other features.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../code/Task1/Analysis/PC.jpg}
+  \caption{The parallel coordinate plot for each features (we chose $10\%$ of total data).}
+  \label{task-1-data-distribution}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../code/Task1/Analysis/corrcoef.jpg} \\
+  \caption{Correlation coefficient for each features.}
+  \label{task-1-correlation-coefficient}
+\end{figure}
+
+After the preparing, the logistic regression and decision tree is applied to the data. The Table \ref{task-1-result-1} and Table \ref{task-1-result-2} shows the results of logistic regression and decision tree with different hyperparameters. Each test includes $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. And the macro f1 score, time and memory cost are recorded.
+
+The result shows that the logistic regression can reach the f1 score about $0.79$ while the decision tree can only get the $0.75$. This might be caused by the overfitting of the decision tree, since there is a large gap between the f1 score on the testing data and training data. Further more, in this task, the dimension raising doesn't give a better preformance, which implies that the relationships between labels and origin data might be linear. However, the lasso and ridge penalty can lead to a better f1 score, which means that some features are useless and can influence the optimizing.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Penalty & \makecell{Dimension                                \\ Raising \\ (Degree)} & \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)} \\
+    \hline
+    None    & None                & $0.7909/0.7933$ & $1.55/735$ \\
+    \hline
+    None    & $2$                 & $0.7905/0.7936$ & $1.41/730$ \\
+    \hline
+    None    & $3$                 & $0.7909/0.7936$ & $1.28/741$ \\
+    \hline
+    Lasso   & None                & $0.7912/0.7927$ & $1.66/736$ \\
+    \hline
+    Ridge   & None                & $0.7915/0.7928$ & $1.65/735$ \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for logistic regression. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data) and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    Max Depth & \makecell{Number of                                          \\ Threshold} & Criterion & \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)}               \\
+    \hline
+    $10$      & $64$                & gini    & $0.7502/0.8677$ & $17.5/497$ \\
+    \hline
+    $10$      & $128$               & gini    & $0.7485/0.8698$ & $16.4/498$ \\
+    \hline
+    $12$      & $64$                & gini    & $0.7266/0.9089$ & $25.2/497$ \\
+    \hline
+    $10$      & $64$                & entropy & $0.7428/0.8500$ & $16.4/501$ \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for decision tree. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data) and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+\end{table}
+
 \subsection{Task 2}
+
+The Figure \ref{task-2-overview-flowchart} shows the workflow of task 2. During the preparing, we focus the missing  value problems, and the distribution of each features as well as the correlation coefficients as the auxiliary. The $k$ nearest neighbor imputer is applied to the data for filling the missing values, which fill in the values with existing data. After the preparing, the decision tree and MLP is implemented and applied to the data, with different hyperparameters to show the effect of them. The logistic regression is not considered in this task due to the highly nonlinearity. In the end, the macro f1 score is used to evaluate the model. In the meanwhile, the time and memory cost is also recorded for analysis.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[minimum width=1.75cm, minimum height=1.25cm, font=\scriptsize]
+    \node[draw, align=center, rounded corners]  (P)   at ( 0,  0.0)    {Prepare};
+    \node[draw, align=center, rounded corners]  (D)   at (-1,  1.5)    {Distribution \\ Analysis};
+    \node[draw, align=center, rounded corners]  (C)   at ( 1,  1.5)    {Correlation \\ Coefficient};
+    \node[draw, align=center, rounded corners]  (F)   at (-1, -1.5)    {Feature \\ Selection};
+    \node[draw, align=center, rounded corners]  (KNN) at ( 1, -1.5)    {$k$-NN imputer};
+
+    \node[draw, align=center, rounded corners]  (M)   at ( 4,  0.0)    {Analyze};
+    \node[draw, align=center, rounded corners]  (DT)  at ( 4,  1.5)    {Decision \\ Tree};
+    \node[draw, align=center, rounded corners]  (MLP) at ( 4, -1.5)    {MLP};
+
+    \node[draw, align=center, rounded corners]  (E)   at ( 7,  0.0)    {Evaluation \\ (Macro F1 Score)};
+
+    \draw[->] (P) -- (M);
+
+    \draw[-]  (P) -- (D);
+    \draw[-]  (P) -- (C);
+    \draw[-]  (P) -- (F);
+    \draw[-]  (P) -- (KNN);
+
+    \draw[-]  (M) -- (DT);
+    \draw[-]  (M) -- (MLP);
+
+    \draw[->] (M) -- (E);
+  \end{tikzpicture}
+  \caption{Overview flowchart for task 2.}
+  \label{task-2-overview-flowchart}
+\end{figure}
+
+The Figure \ref{task-2-missing-value} shows the number and proportion of missing values for each feature in training data, the missing values occur in few features. The features named X51, Y51, Z51 includes most missing values with the number $6634$ out of $40000$, about $16.6\%$. And the others includes no missing values or only few missing values less than $5\%$. For features with few missing values, such as X31, X41, we used the $k$ nearest neighbor imputer with the number of neighbors as the default $5$. And for the X51, Y51, Z51, the number of missing values is much larger, thus we tried two approaches: either use the $k$ nearest neighbor imputer to fill in the values, or simply drop it in the feature selection step.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    Feature & \makecell{Number                                               \\ (Proportion)                               \\ Of Miss Value} & Feature & \makecell{Number \\ (Proportion) \\ Of Miss Value} & Feature & \makecell{Number \\ (Proportion) \\ Of Miss Value} \\
+    \hline
+    X01     & $0 (0.0\%)$      & Y01 & $0 (0.0\%)$    & Z01 & $0 (0.0\%)$    \\
+    \hline
+    X11     & $0 (0.0\%)$      & Y11 & $0 (0.0\%)$    & Z11 & $0 (0.0\%)$    \\
+    \hline
+    X21     & $0 (0.0\%)$      & Y21 & $0 (0.0\%)$    & Z21 & $0 (0.0\%)$    \\
+    \hline
+    X31     & $355 (0.9\%)$    & Y31 & $355 (0.9\%)$  & Z31 & $355 (0.9\%)$  \\
+    \hline
+    X41     & $1604 (4.0\%)$   & Y41 & $1604 (4.0\%)$ & Z41 & $1604 (4.0\%)$ \\
+    \hline
+    X51     & $6634 (16.6\%)$  & Y51 & $6634 (0.0\%)$ & Z51 & $6634 (0.0\%)$ \\
+    \hline
+  \end{tabular}
+  \caption{The number and proportion of missing values for each feature in training data.}
+  \label{task-2-missing-value}
+\end{table}
+
+The Figure \ref{task-2-data-distribution-feature} shows the distribution of each feature, where the top and bottom $5\%$ points are considered as outliers, which are not shown in the figure, but still used in training model. And the vertical lines shows the position of first, second and third quartiles. And the Figure \ref{task-2-correlation-coefficient} shows the correlation coefficient between each label and each features.
+
+For each features, it is hard to separated the data with different labels, but there are still some useful properties. For class 1 (red), the data distribution of each features are quite different. For example, for features Y01, T21 and Y41, the red part occurs mostly in the middle of the range, while for features Z31, Z41, it appears at the left side. And for class 2 (blue), the data always occurs on the right side. From the above we can easily build a model to classify the class 1 and 2, and so on so forth for the other classes.
+
+The correlation coefficient also shows that some features are useful. For example, the feature Z41 reaches $0.4$ of correlation with class 2, while it only get less than $0.1$ of correlation for classes 3, 4 and 5. These results implies that there exists some features that only related to only one or two classed, which can be useful in classification.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X01}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y01}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z01}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X11}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y11} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z11}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X21}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y21}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z21}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X31} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y31}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z31}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X41}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y41}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z41} \\
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-X51}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Y51}
+  \includegraphics[width=0.18\textwidth]{../code/Task2/Analysis/Hist-Z51}
+  \caption{The distribution for each feature (the top and bottom $5\%$ points are considered as outliers, and are not shown). The vertical lines shows the position of first, second and third quartiles.}
+  \label{task-2-data-distribution-feature}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.45\textwidth]{../code/Task2/Analysis/corrcoef-1.jpg}
+  \includegraphics[width=0.45\textwidth]{../code/Task2/Analysis/corrcoef-2.jpg} \\
+  \includegraphics[width=0.45\textwidth]{../code/Task2/Analysis/corrcoef-3.jpg}
+  \includegraphics[width=0.45\textwidth]{../code/Task2/Analysis/corrcoef-4.jpg} \\
+  \includegraphics[width=0.45\textwidth]{../code/Task2/Analysis/corrcoef-5.jpg}
+  \caption{Correlation coefficient for each features.}
+  \label{task-2-correlation-coefficient}
+\end{figure}
+
+After the preparing, the decision tree and MLP is applied to the data. The Table \ref{task-2-result-1} and Table \ref{task-2-result-2} shows the results of decision tree and MLP with different hyperparameters. Each test includes $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. And the macro f1 score, time and memory cost are recorded.
+
+The result shows that the f1 score by decision tree can only reach $0.80$ to $0.85$, while the MLP can reach more than $0.90$ and up to $0.97$. As for decision tree, comparing the f1 score given by cross validation and the all training data, we can find that the f1 score on training data is much higher, but can still get higher as the max depth increased, which implies that there might be overfitting on some classes, but under fitting for all data. For the MLP, the larger hidden layer size can significantly increase the f1 score, which shows that there are some complex potential relationship between features and labels, this may also be the reason that the decision tree can't get a higher score since it can be regarded as piecewise constant approximation.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \makecell{Max                                                  \\Depth} & \makecell{Num of                                                          \\ Threshold} & Criterion & \makecell{Feature \\ Selection}& \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)}               \\
+    \hline
+    $10$ & $64$  & gini    & False & $0.8097/0.8359$ & $153.6/606$ \\
+    \hline
+    $10$ & $128$ & gini    & False & $0.8043/0.8512$ & $168.5/650$ \\
+    \hline
+    $12$ & $64$  & gini    & False & $0.8511/0.9106$ & $172.8/601$ \\
+    \hline
+    $10$ & $64$  & entropy & False & $0.8184/0.8596$ & $147.7/608$ \\
+    \hline
+    $10$ & $64$  & gini    & True  & $0.8052/0.8334$ & $80.7/585$  \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for decision tree. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data) and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \label{task-2-result-1}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    Dropout & Hidden Size & \makecell{Feature                                        \\ Selection} &Batch Size & \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)} \\
+    \hline
+    $0.3$   & $128$       & False             & 512  & $0.9617/0.9718$ & $219.4/856$ \\
+    \hline
+    $0.3$   & $64$        & False             & 512  & $0.9173/0.9253$ & $212.9/812$ \\
+    \hline
+    $0.3$   & $256$       & False             & 512  & $0.9767/0.9939$ & $221.7/856$ \\
+    \hline
+    $0.3$   & $128$       & False             & 1024 & $0.9629/0.9743$ & $148.6/857$ \\
+    \hline
+    $0.3$   & $128$       & False             & 512  & $0.9644/0.9750$ & $381.4/859$ \\
+    \hline
+    $0.3$   & $128$       & True              & 512  & $0.9474/0.9559$ & $171.7/848$ \\
+    \hline
+  \end{tabular}
+  \caption{Preformance for MLP. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \label{task-2-result-2}
+\end{table}
 
 \subsection{Task 3}
 
-The Figure \ref{task-3-overview-flowchart} shows the workflow of task 3. During the preparing, we first visualize the data, and analyze the distribution for each features and the whole data. Then the correlation coefficients between label and each features are computed, which give the evidence for feature selection. And next, for each selected features, the dimension raising is applied to help handle the nonlinearity of data. After the preparing, the logistic regression and MLP is implement and applied to the data, with different hyperparameters to show the effect of them. In the end, the macro f1 score is used to evaluate the model. In the meanwhile, the time and memory cost is also recorded for analysis.
+The Figure \ref{task-3-overview-flowchart} shows the workflow of task 3. During the preparing, we first visualize the data, and analyze the distribution for each features and the whole data. Then the correlation coefficients between label and each features are computed, which give the evidence for feature selection. And next, for each selected features, the dimension raising is applied to help handle the nonlinearity of data. After the preparing, the logistic regression and MLP is implemented and applied to the data, with different hyperparameters to show the effect of them. In the end, the macro f1 score is used to evaluate the model. In the meanwhile, the time and memory cost is also recorded for analysis.
 
 \begin{figure}[H]
   \centering
@@ -271,13 +513,13 @@ The Figure \ref{task-3-overview-flowchart} shows the workflow of task 3. During 
 
     \draw[->] (M) -- (E);
   \end{tikzpicture}
-  \caption{Overview Flowchart.}
+  \caption{Overview flowchart for task 3.}
   \label{task-3-overview-flowchart}
 \end{figure}
 
-The Figure \ref{task-3-data-distribution} is the parallel coordinate plot for each features, where the $10\%$ of total data is chosen since there are more than $200000$ sampels. The Figure \ref{task-3-data-distribution-feature} shows the distribution of each feature, where the top and bottom $5\%$ points are considered as outliers, which are not shown in the figure, but still used in training model. And the vertical lines shows the position of first, second and third quartiles. And the Figure \ref{task-3-correlation-coefficient} shows the correlation coefficient between the label and each features.
+The Figure \ref{task-3-data-distribution} is the parallel coordinate plot for each features, where the $10\%$ of total data is chosen. The Figure \ref{task-3-data-distribution-feature} shows the distribution of each feature, where the top and bottom $5\%$ points are considered as outliers, which are not shown in the figure, but still used in training model. And the vertical lines shows the position of first, second and third quartiles. And the Figure \ref{task-3-correlation-coefficient} shows the correlation coefficient between the label and each features.
 
-From These three figures, we can easly see that some features (e.g. V4, V11, V12 and V14) are linear separatable with the absolute value of every correlation coefficients more than $0.6$, implies that these features are highly highly relevant to the label, and can be directly used in the predicting model. In the meanwhile, some features (e.g. V15, V22 and Amount) are totally in mess, and the absolute value of correlation coefficients are all less then $0.1$, which needed to be deleted in feature selection. As for the rest, the correlation coefficients mostly between $0.2$ and $0.6$ can lead to a weak relationships, and we assume that there might be some potential nonlinear relationship that can be handeled via dimension raising and nonlinear classifiers.
+From These three figures, we can easly see that some features (e.g. V4, V11, V12 and V14) are linear separatable with the absolute value of every correlation coefficients more than $0.6$, implies that these features are highly highly relevant to the label, and can be directly used in the predicting model. In the meanwhile, some features (e.g. V15, V22 and Amount) are totally in a mess, and the absolute value of correlation coefficients are all less then $0.1$, which needed to be deleted in feature selection. As for the rest, the correlation coefficients mostly between $0.2$ and $0.6$ can lead to a weak relationships, and we assume that there might be some potential nonlinear relationship that can be handeled via dimension raising and nonlinear classifiers.
 
 In our implementation, we set the $0.1$ as the threshold and only the features with correlation coefficients great than $0.1$ or less than $-0.1$ will be selected. And the degree of dimension raising is not higher than $3$ due to the high degree polynomial features might cause numerical instability or be correlated, which can making optimization more difficult.
 
@@ -330,9 +572,9 @@ In our implementation, we set the $0.1$ as the threshold and only the features w
   \label{task-3-correlation-coefficient}
 \end{figure}
 
-The Table \ref{task-3-result-1} and Table \ref{task-3-result-2} shows the results of logistic regression and MLP with different hyperparameters. Each test includes $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. And the macro f1 score, time and memory cost are recorded.
+After the preparing, the logistic regression and MLP is applied to the data. The Table \ref{task-3-result-1} and Table \ref{task-3-result-2} shows the results of logistic regression and MLP with different hyperparameters. Each test includes $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. And the macro f1 score, time and memory cost are recorded.
 
-The result shows that the logistic regression can reach the f1 score more than $0.95$. Comparing the f1 score given by different raising degree, the results become better as the degree increases, which implies that there exists some potential nonlinearity in the data, but not that significant. On the other hand, the time and memory cost will increase rapidly, which shows that this operator is seem not worth to be done. As for the penalty and feature selection, they will not significantly change the result, which might because that the logistic regression is not prone to overfitting since it is linear and will focus more on the linear separable features.
+The result shows that the logistic regression can reach the f1 score higher than $0.95$. Comparing the f1 score given by different raising degree, the results become better as the degree increases, which implies that there exists some potential nonlinearity in the data, but not that significant. On the other hand, the time and memory cost will increase rapidly, which shows that this operator is seem not worth to be done. As for the penalty and feature selection, they will not significantly change the result, which might because that the logistic regression is not prone to overfitting since it is linear and will focus more on the linear separable features.
 
 The MLP model can also reach the f1 score up to $0.95$, and since it highly nonlinear with the ability for capturing increasingly complex patterns hierarchically, there is no need to do the dimension raising. And the feature selection will cause the decreasing of the f1 score also supports this conclusion. On the other hand, The result shows that it will be more sensitive to the hyperparameters, for example, the f1 score will suddenly decreases when the dropout rate changes from $0.1$ to $0.2$.
 
@@ -340,22 +582,22 @@ The MLP model can also reach the f1 score up to $0.95$, and since it highly nonl
   \centering
   \begin{tabular}{|c|c|c|c|c|}
     \hline
-    Penalty & \makecell{Dimension                                 \\ Raising \\ (Degree)} & \makecell{Feature \\ Selection} & F1 Score & \makecell{Time/Mem \\ (s/MB)} \\
+    Penalty & \makecell{Dimension                                        \\ Raising \\ (Degree)} & \makecell{Feature \\ Selection} & \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)} \\
     \hline
-    None    & None                & False & $0.9586$ & $19.5/866$ \\
+    None    & None                & False & $0.9586/0.9577$ & $19.5/866$ \\
     \hline
-    None    & $2$                 & False & $0.9619$ & $33.5/915$ \\
+    None    & $2$                 & False & $0.9619/0.9610$ & $33.5/915$ \\
     \hline
-    None    & $3$                 & False & $0.9621$ & $49.6/973$ \\
+    None    & $3$                 & False & $0.9621/0.9612$ & $49.6/973$ \\
     \hline
-    Lasso   & None                & False & $0.9579$ & $21.5/854$ \\
+    Lasso   & None                & False & $0.9579/0.9570$ & $21.5/854$ \\
     \hline
-    Ridge   & None                & False & $0.9553$ & $19.8/853$ \\
+    Ridge   & None                & False & $0.9553/0.9544$ & $19.8/853$ \\
     \hline
-    None    & None                & True  & $0.9582$ & $16.5/825$ \\
+    None    & None                & True  & $0.9582/0.9573$ & $16.5/825$ \\
     \hline
   \end{tabular}
-  \caption{Preformance for logistic regression. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \caption{Preformance for logistic regression. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
   \label{task-3-result-1}
 \end{table}
 
@@ -363,20 +605,20 @@ The MLP model can also reach the f1 score up to $0.95$, and since it highly nonl
   \centering
   \begin{tabular}{|c|c|c|c|c|}
     \hline
-    Dropout & Hidden Size & \makecell{Feature                         \\ Selection} & F1 Score & \makecell{Time/Mem \\ (s/MB)} \\
+    Dropout & Hidden Size & \makecell{Feature                                \\ Selection} & \makecell{F1 Score \\ (Test/Train)} & \makecell{Time/Mem \\ (s/MB)} \\
     \hline
-    $0.1$   & $32$        & False             & $0.9522$ & $31.9/929$ \\
+    $0.1$   & $32$        & False             & $0.9522/0.9548$ & $31.9/929$ \\
     \hline
-    $0.2$   & $32$        & False             & $0.9000$ & $31.1/916$ \\
+    $0.2$   & $32$        & False             & $0.9000/0.9207$ & $31.1/916$ \\
     \hline
-    $0.1$   & $32$        & True              & $0.9481$ & $31.3/899$ \\
+    $0.1$   & $32$        & True              & $0.9481/0.9480$ & $31.3/899$ \\
     \hline
-    $0.1$   & $16$        & False             & $0.9503$ & $31.7/929$ \\
+    $0.1$   & $16$        & False             & $0.9503/0.9493$ & $31.7/929$ \\
     \hline
-    $0.1$   & $64$        & True              & $0.9500$ & $29.7/902$ \\
+    $0.1$   & $64$        & True              & $0.9500/0.9501$ & $29.7/902$ \\
     \hline
   \end{tabular}
-  \caption{Preformance for MLP. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation, the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
+  \caption{Preformance for MLP. We tested each option with $5$ times cross validation ($80\%$ for training set, $20\%$ for training set) and $1$ times that using all data as training set. The f1 scores showed in the table is the average f1 score for cross validation and using all data as training set (in this case, we just tested the model on training data), the time is the total time for $6$ run, and the memory usage is tested using all the data as training set.}
   \label{task-3-result-2}
 \end{table}
 
