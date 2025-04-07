@@ -1,5 +1,7 @@
 # Big-Data-Computing
 
+Our kaggle team is named as `Team #12`.
+
 **If there is any problem, please email me at [zeyu-asparagine.wang@connect.polyu.hk](mailto:zeyu-asparagine.wang@connect.polyu.hk) .**
 
 Requirement:
@@ -20,3 +22,4 @@ the `.sh` file includes the command to run the code, where the `run.sh` includes
 
 the `result` and `result-{method}` folder includes the result output by the code, the `log.txt` record the option, f1 score and time cost and `mem.txt` is the memory cost. The results in `result` are submitted to the kaggle, and others are ablation test.
 
+The `*.ipynb` and `demo1.py` are preliminary experiment, which are not used in the final version, but we still keep it.
