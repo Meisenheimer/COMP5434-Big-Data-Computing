@@ -104,9 +104,36 @@ SmallCapsFeatures={Numbers=OldStyle}]{NewCMMono10-Regular.otf}
 
 \subsection{Task 1}
 
+With a better model and more accelerate prediction, people can make informed decisions to enhance student success, which is important for educational institutions, training programs, and career development. In this task, we develop models based on a variety of features, including academic metrics, aptitude scores, and soft skill ratings, to predicting whether a student will be successfully placed in a job. As shown in Table \ref{task-1-data}, the dataset includes in total $10$ features, together with the student ID and a binary label denotes placement status, where 1 means successfully placed and 0 otherwise.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Feature}          & \textbf{Type} & \textbf{Feature}         & \textbf{Type} \\
+    \hline
+    CGPA                      & Numerical     & Internships              & Numerical     \\
+    \hline
+    Projects                  & Nominal       & Workshops/Certifications & Nominal       \\
+    \hline
+    AptitudeTestScore         & Nominal       & SoftSkillsRating         & Numerical     \\
+    \hline
+    ExtracurricularActivities & Binary        & PlacementTraining        & Binary        \\
+    \hline
+    SSC\_Marks                & Numerical     & HSC\_Marks               & Numerical     \\
+    \hline
+  \end{tabular}
+  \caption{Student Placement Dataset Features}
+  \label{task-1-data}
+\end{table}
+
 \subsection{Task 2}
 
+In this task, a dataset records some anonymity features with labels is given, and the goal is to train a model to predict the labels based on the training set. There are in total $18$ anonymity numerical features with ID and a label including 5 classes.
+
 \subsection{Task 3}
+
+Card providers and banks takes considerable time and effort to fight against the fraud. This is because the financial loss and trust impact are tremendous even with a low fraud rate. Therefore, it is essential to develop an effective automated fraud detection system. In this task, the goal is to train a model to classify whether this transaction is fraudulent or not based on the dataset records the information about credit card transactions with fraud indicator. The dataset includes in total $28$ anonymity numerical features with the with the ID, the transaction amount and a binary label indicates whether it is a fraudulent transaction or a legitimate transaction.
 
 \section{Data Prepare Method}
 
