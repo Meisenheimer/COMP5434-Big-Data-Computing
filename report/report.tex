@@ -69,13 +69,16 @@ SmallCapsFeatures={Numbers=OldStyle}]{NewCMMono10-Regular.otf}
     \vspace{0.5cm}
   } \\
   \parbox{0.2\textwidth}{
-    \centering WANG Zeyu
+    \centering WANG Zeyu \\
+    \centering 24056788G
   }
   \parbox{0.2\textwidth}{
-    \centering YANG Xirui
+    \centering YANG Xirui \\
+    \centering 24135668G
   }
   \parbox{0.2\textwidth}{
-    \centering Wu Tianxiao
+    \centering Wu Tianxiao \\
+    \centering 24084591G
   }
 }
 
@@ -93,7 +96,7 @@ SmallCapsFeatures={Numbers=OldStyle}]{NewCMMono10-Regular.otf}
 \vspace{1cm}
 
 \begin{abstract}
-  This report presents our team's solutions of three classification tasks: student placement prediction, feature-based multi-class classification, and fraud detection. We first introduce the problem definition and the dataset as well as give a brief introduction of the methods we use. Then the for each task, following the data analytical process, we design the preparing and analyzing algorithm to handle the problems such as the missing values and feature engineering. We use the techniques like correlation coefficient and $k$ nearest neighbor imputer in exploration and preprocessing, then the logistics regression, decision tree and multilayer perceptron are implement and apply to the data. In the end, we report the model performance with the discovery based on the results.
+  This report presents our team's solutions of three classification tasks: student placement prediction, feature-based multi-class classification, and fraud detection. We first introduce the problem definition and the dataset as well as give a brief introduction of the methods we use. Then the for each task, following the data analytical process, we design the preparing and analyzing algorithm to handle the problems such as the missing values and feature engineering. We use the techniques like correlation coefficient and $k$ nearest neighbor imputer in exploration and preprocessing, then the logistics regression, decision tree and multilayer perceptron are implemented and applied to the data. In the end, we report the model performance with the discovery based on the results.
   \\\\
   \textbf{Keywords:} Classification, Machine learning.
 \end{abstract}
@@ -653,6 +656,24 @@ The MLP model can also reach the f1 score up to $0.95$, and since it highly nonl
 
 \section{Summary}
 
+During this project, we solved three classification tasks: student placement prediction, feature-based multi-class classification, and fraud detection. For each task, we followed a structured data analytical process, including data exploration, feature engineering, model implementation and performance evaluation.
+
+Different kind of machine learning methods and data analysis techniques are used. In the data exploration part, the correlation coefficient is employed to analyze the relationships between features and label, then the visualization techniques such as parallel coordinate plots and histogram are used for a more intuitive result. With these we figure out the importance of features and the distribution of data.
+
+In the feature engineering, we applied the $k$ nearest neighbors imputer to fill in the missing values and enhance the data through feature selection and dimension raising. And for modeling and prediction, we implemented all the key details of logistic regression, decision tree and MLP by PyTorch, instead of simply invoking the black-box algorithms, and ensured the repeatable results. Additionally, we fully recorded the model training process, including the time and memory cost, and try to do some optimization on them by learning rate adjustment and parallel computing.
+
+\subsection{Discovery \& insights}
+
+For task 1, the manually designed features combination and correlation analysis can help imrpove the logistic regression on predominantly linear data, though dimension raising offered limited improvement. For task 2, the $k$ nearest neighbors imputer improved data integrity by filling the missing values, and MLP excelled at capturing nonlinear relationships, with feature selection providing minimal benefit. As for task 3, feature selection based on correlation coefficients with dimension raising can lead to a higher performance for both logistic regression and MLP, though higher-degree raising incurred excessive computational costs.
+
+All the three task shows the importance of feature engineering and model selection. The linear models like logistic regression preforms a better reliability and efficiency especially on linearly separable data like tasks 1 and 3, while nonlinear models like MLP can reach a better performance in the complex multi-class problem such as task 2. On the other hand, the effectiveness of feature engineering varies by task, which needs adjustments based on the data. Moreover, performance optimization involves balancing between the accuracy and computational cost, which is shown in task 3 that the dimension raising will significantly increase the time and memory consumption.
+
+In terms of hyperparameter tuning, applying regularization (e.g., lasso or ridge for logistic regression, maximun depth for decision tree, dropout for MLP) can help reduce the influence of noise and outliers, which prevent the model from overfitting and ensuring the generalization in the meanwhile. Further more, the parallel computing as we implemented in decision tree and MLP can significantly accelerate the training, but must be balanced against memory constraints and convergence stability.
+
+\subsection{Future work}
+
+In data preparing, on possible way to optimize the model performance is to employ automated feature engineering tools insteal of manual design, which can improve feature selection and generation. As for decision tree, ensemble methods (e.g., random forests or gradient boosting trees) may help deal with the overfitting of decision tree. Further more, one important application is to process the data stream instantly, i.e., adapt the models to a dynamic environment and input. Especially for the fraud detection, an earlier detection may lead to a less loss. One way to speed up the training and predicti is the distributed computing frameworks, which can also help training with the large-scale datasets.
+
 \newpage
 
 \bibliographystyle{unsrt}
@@ -670,13 +691,13 @@ The MLP model can also reach the f1 score up to $0.95$, and since it highly nonl
   \centering
   \begin{tabular}{|c|c|c|}
     \hline
-    Name        & \makecell{Percentage of   \\ contributions} & Details \\
+    Name & \makecell{Percentage of \\ contributions} & Details \\
     \hline
-    WANG Zeyu   &                         & \\
+    \makecell{WANG Zeyu            \\ 24056788G}   &        $34\%$                 & Implement logistic regression and task 3. Write report\\
     \hline
-    YANG Xirui  &                         & \\
+    \makecell{YANG Xirui           \\ 24135668G}  &               $33\%$          &Implement MLP and task 1. Write report \\
     \hline
-    Wu Tianxiao &                         & \\
+    \makecell{Wu Tianxiao          \\ 24084591G} &                      $33\%$   & Implement decision tree and task 2. Write report\\
     \hline
   \end{tabular}
   \caption{Contributions.}
