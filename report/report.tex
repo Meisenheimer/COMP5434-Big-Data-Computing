@@ -139,7 +139,7 @@ Card providers and banks takes considerable time and effort to fight against the
 
 \subsection{Correlation coefficient}
 
-The correlation coefficient measures the relationship between two samples, which can also be used to find the potential relationship between features and labels in classification tasks. Pearson correlation coefficient, Kendall correlation coefficient and Spearman correlation coefficient are three of mostly used methods, which indicate the linear and rank correlation between features and labels.
+The correlation coefficient measures the relationship between two samples, which can also be used to find the potential relationship between features and labels in classification tasks. Pearson correlation coefficient, Kendall correlation coefficient and Spearman correlation coefficient are three of mostly used methods \cite{abdi2007kendall} \cite{hauke2011comparison}, which indicate the linear and rank correlation between features and labels.
 
 \subsubsection{Pearson correlation coefficient}
 
@@ -175,7 +175,7 @@ $$
 
 \subsection{$k$ nearest neighbors imputer}
 
-The $k$ nearest neighbors imputer fill in the missing values based on the $k$ nearest neighbors algorithm. With the euclidean distance metric that supports missing values, which compute the distance with existing features, each missing value is imputed using the mean value of nearest neighbors.
+The $k$ nearest neighbors imputer fill in the missing values based on the $k$ nearest neighbors algorithm, which is  robust and sensitive in many applications \cite{troyanskaya2001missing} \cite{juna2022water}. With the euclidean distance metric that supports missing values, which compute the distance with existing features, each missing value is imputed using the mean value of nearest neighbors.
 
 This method works with both numerical and categorical data, but can be easily influenced by the distribution of the data especially when the data is sparse in the nearby area.
 
@@ -183,7 +183,7 @@ This method works with both numerical and categorical data, but can be easily in
 
 In order to better deal with the nonlinearity, we used the dimension raising in preprocessing, which transform the data to a higher dimensional space. Given the scalar data $x_i$ and a given degree $d$, one simple way is to compute the new data as $(x_i, x_i^2, \dots, x_i^d)$, which will make some patterns or relationships more apparent. Another way is to combine the features. For example, given scalar $x_i$ and $y_i$, the new data is computed as $(x_i, y_i, x_i y_i)$. In this approach, we can manually constructe more meanful and complex features, which can better balance the data size and model performance.
 
-The Figure \ref{sample-raising} shows the example for dimension raising. In the origin data (the left figure), the red part is between the two blue part, whcih can make difficulty in classification, especially for linear or weakly nonlinear classifier, while the data after dimension raising can be easily separated.
+The Figure \ref{sample-raising} shows the example for dimension raising. In the origin data (the left figure), the red part is between the two blue part, which can make difficulty in classification, especially for linear or weakly nonlinear classifier, while the data after dimension raising can be easily separated.
 
 \begin{figure}[H]
   \centering
@@ -197,7 +197,7 @@ The Figure \ref{sample-raising} shows the example for dimension raising. In the 
 
 \subsection{Logistic regression}
 
-The logistic regression is a widely used classification model with less prone to overfitting due to its linearty. By linearly combine the input features, the logistic regression gives a probability value ranging between $0$ and $1$ as output via
+The logistic regression \cite{walker1967estimation} \cite{pohar2004comparison} is a widely used classification model with less prone to overfitting due to its linearty. By linearly combine the input features, the logistic regression gives a probability value ranging between $0$ and $1$ as output via
 
 $$
   p (\mathbf{x}) = \frac{1}{1 + \exp{- \mathbf{x}^T \beta_1 - \beta_0}},
@@ -234,7 +234,7 @@ We implement the above method with the Lasso and Ridge penalty by PyTorch, most 
 
 \subsection{Decision tree}
 
-The decision tree is a supervised learning method used for classification. Based on the simple decision rules inferred from the data features, it will create a model that predict the label with piecewise constant approximation. More specifically, given the samples $s = \{(x_i, y_i)\}_{i=1}^n$ the Gini index and the Entropy is computed as
+The decision tree \cite{utgoff1989incremental} \cite{kotsiantis2013decision} is a supervised learning method used for classification. Based on the simple decision rules inferred from the data features, it will create a model that predict the label with piecewise constant approximation. More specifically, given the samples $s = \{(x_i, y_i)\}_{i=1}^n$ the Gini index and the Entropy is computed as
 
 $$
   \begin{aligned}
@@ -257,9 +257,9 @@ After compute the grid, we can calculate the information gain for all splitting 
 
 \subsection{Multilayer perceptron}
 
-The multilayer perceptron (MLP) is a basic kind of neural network which learns a function $f: \mathbb{R}^n \mapsto \mathbb{R}^m$ to approximate the input and output. Differnet from the logistic regression, the MLP includes some hidden layer with the nonlinear active function, which can help handle nonlineariy of the data, as well as the hierarchical feature extraction, i.e., it can capturing increasingly complex patterns level by level.
+The multilayer perceptron (MLP) \cite{rosenblatt1958perceptron} \cite{rumelhart1986learning} is a basic kind of neural network which learns a function $f: \mathbb{R}^n \mapsto \mathbb{R}^m$ to approximate the input and output. Differnet from the logistic regression, the MLP includes some hidden layer with the nonlinear active function, which can help handle nonlineariy of the data, as well as the hierarchical feature extraction, i.e., it can capturing increasingly complex patterns level by level.
 
-We implement the MLP by PyTorch with Adam optimizer, which can help train the network efficiently. The hyperparameters including size of each batch, size of hidden layer, dropout rate and number of total epoch are given by users, and during our test a large batch size is used to accelerate the training. We used LeakyReLU as activate function, as well as batch normalization and dropout for better performance and avoiding the overfitting.
+We implement the MLP by PyTorch with Adam optimizer \cite{kingma2014adam} , which can help train the network efficiently. The hyperparameters including size of each batch, size of hidden layer, dropout rate and number of total epoch are given by users, and during our test a large batch size is used to accelerate the training. We used LeakyReLU as activate function, as well as batch normalization and dropout for better performance and avoiding the overfitting.
 
 \section{Solution \& Preformance}
 
